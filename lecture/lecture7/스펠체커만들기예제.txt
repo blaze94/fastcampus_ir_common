@@ -2,6 +2,7 @@
 bin/elasticsearch-plugin install analysis-icu
 
 2. 스펠체커 분석기를 위한 분석기 세팅
+-PUT jihoon_spell
 {
   "index":{
     "analysis":{
@@ -11,10 +12,14 @@ bin/elasticsearch-plugin install analysis-icu
           "char_filter": [
             "nfd_normalizer"
           ]
+          ,
+          "filter": [
+          "lowcase","jaso-filter"
+          ]
         }
-      }
-      "char_filter": {
-        "nfd_normalizer": {
+      },
+      "filter": {
+        "my_filter": {
           "type": "icu_normalizer",
           "name": "nfc",
           "mode": "decompose"
@@ -25,6 +30,7 @@ bin/elasticsearch-plugin install analysis-icu
 }
 
 3. 데이터 매핑
+-PUT jihoon_spell/_mappings/article
 {
   "article" : {
     "properties" : {
@@ -45,14 +51,16 @@ bin/elasticsearch-plugin install analysis-icu
 }
 
 4. 테스트 데이터 입력
+-PUT 인덱스명/타입명/id
+-POST 인덱스명/타입명
 {
-  title : "이승철"
+  "title" : "이승철"
 }
 {
-  title : "이승기"
+  "title" : "이승기"
 }
 {
-  title : "이승찰"
+  "title" : "이승찰"
 }
 
 
@@ -68,16 +76,79 @@ bin/elasticsearch-plugin install analysis-icu
         "term" : {
         "field" : "title.spell",
         "string_distance" : "jarowinkler"
+
       }
     }
   }
 }
 
+{
+    "took": 27,
+    "timed_out": false,
+    "_shards": {
+        "total": 5,
+        "successful": 5,
+        "failed": 0
+    },
+    "hits": {
+        "total": 3,
+        "max_score": 1,
+        "hits": [
+            {
+                "_index": "kimjihoon_spell",
+                "_type": "article",
+                "_id": "2",
+                "_score": 1,
+                "_source": {
+                    "title": "이승기"
+                }
+            },
+            {
+                "_index": "kimjihoon_spell",
+                "_type": "article",
+                "_id": "1",
+                "_score": 1,
+                "_source": {
+                    "title": "이승철"
+                }
+            },
+            {
+                "_index": "kimjihoon_spell",
+                "_type": "article",
+                "_id": "3",
+                "_score": 1,
+                "_source": {
+                    "title": "이승찬"
+                }
+            }
+        ]
+    },
+    "suggest": {
+        "my-suggestion": [
+            {
+                "text": "이승깅",
+                "offset": 0,
+                "length": 3,
+                "options": [
+                    {
+                        "text": "이승기",
+                        "score": 0.9875,
+                        "freq": 1
+                    }
+                ]
+            }
+        ]
+    }
+}
 
 6. 자바에서의 사용
 
 
 String result = Normalizer.normalize(temp,Normalizer.Form.NFC); //재결합후 사용한다.
+
+
+
+
 SearchResponseresponse=client.prepareSearch("foodblog","foodblog")
     .setTypes("post","post")
     .setSearchType(SearchType.DFS_QUERY_THEN_FETCH)
@@ -95,4 +166,26 @@ if(suggest!= null) {
         spellList.add(Normalizer.normalize(temp,Normalizer.Form.NFC));
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 

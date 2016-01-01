@@ -24,6 +24,7 @@ PUT localhost:9200/_ingest/pipeline/parse_nyc_csv
 GET localhost:9200/_ingest/pipeline/parse_nyc_csv
 ​
 3.시뮬레이션
+-POST localhost:9200/_ingest/pipeline/_simulate
 {
  "pipeline": {
    "description": "Parsing the NYC stations",

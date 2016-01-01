@@ -21,3 +21,195 @@
     }
   }
 }
+
+{
+  "took": 16,
+  "timed_out": false,
+  "_shards": {
+    "total": 5,
+    "successful": 5,
+    "failed": 0
+  },
+  "hits": {
+    "total": 22,
+    "max_score": 0,
+    "hits": []
+  },
+  "aggregations": {
+    "sum_per_year": {
+      "buckets": [
+        {
+          "key_as_string": "1996-01-01",
+          "key": 820454400000,
+          "doc_count": 4,
+          "sum_point": {
+            "value": 100
+          }
+        },
+        {
+          "key_as_string": "1997-01-01",
+          "key": 852076800000,
+          "doc_count": 0,
+          "sum_point": {
+            "value": 0
+          }
+        },
+        {
+          "key_as_string": "1998-01-01",
+          "key": 883612800000,
+          "doc_count": 0,
+          "sum_point": {
+            "value": 0
+          }
+        },
+        {
+          "key_as_string": "1999-01-01",
+          "key": 915148800000,
+          "doc_count": 0,
+          "sum_point": {
+            "value": 0
+          }
+        },
+        {
+          "key_as_string": "2000-01-01",
+          "key": 946684800000,
+          "doc_count": 0,
+          "sum_point": {
+            "value": 0
+          }
+        },
+        {
+          "key_as_string": "2001-01-01",
+          "key": 978307200000,
+          "doc_count": 0,
+          "sum_point": {
+            "value": 0
+          }
+        },
+        {
+          "key_as_string": "2002-01-01",
+          "key": 1009843200000,
+          "doc_count": 0,
+          "sum_point": {
+            "value": 0
+          }
+        },
+        {
+          "key_as_string": "2003-01-01",
+          "key": 1041379200000,
+          "doc_count": 0,
+          "sum_point": {
+            "value": 0
+          }
+        },
+        {
+          "key_as_string": "2004-01-01",
+          "key": 1072915200000,
+          "doc_count": 0,
+          "sum_point": {
+            "value": 0
+          }
+        },
+        {
+          "key_as_string": "2005-01-01",
+          "key": 1104537600000,
+          "doc_count": 0,
+          "sum_point": {
+            "value": 0
+          }
+        },
+        {
+          "key_as_string": "2006-01-01",
+          "key": 1136073600000,
+          "doc_count": 0,
+          "sum_point": {
+            "value": 0
+          }
+        },
+        {
+          "key_as_string": "2007-01-01",
+          "key": 1167609600000,
+          "doc_count": 0,
+          "sum_point": {
+            "value": 0
+          }
+        },
+        {
+          "key_as_string": "2008-01-01",
+          "key": 1199145600000,
+          "doc_count": 0,
+          "sum_point": {
+            "value": 0
+          }
+        },
+        {
+          "key_as_string": "2009-01-01",
+          "key": 1230768000000,
+          "doc_count": 0,
+          "sum_point": {
+            "value": 0
+          }
+        },
+        {
+          "key_as_string": "2010-01-01",
+          "key": 1262304000000,
+          "doc_count": 0,
+          "sum_point": {
+            "value": 0
+          }
+        },
+        {
+          "key_as_string": "2011-01-01",
+          "key": 1293840000000,
+          "doc_count": 0,
+          "sum_point": {
+            "value": 0
+          }
+        },
+        {
+          "key_as_string": "2012-01-01",
+          "key": 1325376000000,
+          "doc_count": 0,
+          "sum_point": {
+            "value": 0
+          }
+        },
+        {
+          "key_as_string": "2013-01-01",
+          "key": 1356998400000,
+          "doc_count": 0,
+          "sum_point": {
+            "value": 0
+          }
+        },
+        {
+          "key_as_string": "2014-01-01",
+          "key": 1388534400000,
+          "doc_count": 2,
+          "sum_point": {
+            "value": 70
+          }
+        },
+        {
+          "key_as_string": "2015-01-01",
+          "key": 1420070400000,
+          "doc_count": 0,
+          "sum_point": {
+            "value": 0
+          }
+        },
+        {
+          "key_as_string": "2016-01-01",
+          "key": 1451606400000,
+          "doc_count": 16,
+          "sum_point": {
+            "value": 299
+          }
+        }
+      ]
+    },
+    "avg_monthly_points": {
+      "value": 156.33333333333334
+    }
+  }
+}

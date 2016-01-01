@@ -1,4 +1,5 @@
 1. 데이터 매핑
+-PUT recs  (인덱스 처음 생성시)
 {
   "mappings": {
     "user": {
@@ -58,36 +59,4 @@ POST recs/user/_search
             }
         }
     }
-}
-
-
-"aggs" : {
-         "avg_price" : {
-                 "avg" : { "field" : "price"}
-         },
-        "all_price" : {
-            "global" : {},
-            "aggs" : {
-                "avg_price" : {
-                    "avg" : { "field" : "price"}
-                 }
-            }
-        }
-}
-
-
-"aggs" : {
-     "color" : {
-         "terms" : {
-            "field" : "color",
-            "order" : "{
-                "avg_price" : "asc"
-            }
-         }
-     },
-    "aggs" : {
-        "avg_price" : {
-            "avg" : { "field" : "price"}
-         }
-     }
 }
