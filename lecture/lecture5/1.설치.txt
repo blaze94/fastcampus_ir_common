@@ -1,0 +1,188 @@
+---------------------------------------------------------------------------------------------------------
+1.EC2 접속
+- Putty 혹은 iTerm 설치
+- 다운받은 fastcampus.pem 파일로 접속
+예) ssh -i fastcampus.pem ec2-user@52.78.129.114
+
+
+윈도우 putty의 경우
+https://www.chiark.greenend.org.uk/~sgtatham/putty/latest.html
+putty와 puttygen을 다운로드
+puttygen 실행
+open 후 fastcampus.pem을 선택후 [Save private key] 저장
+
+putty 실행후
+호스트명 ec2-user@52.78.129.114 접속
+putty configuration 에서 [ssh]-[auth] 메뉴에서 private key for authentication 메뉴를 통해 생성한 키값 로드
+
+
+- root 패스워드 변경
+sudo passwd root
+su
+exit
+---------------------------------------------------------------------------------------------------------
+2. 자바8 설치 (root 계정으로)
+-설치가능한 자바 버전 확인
+yum list java*jdk-devel
+-설치
+yum install java-1.8.0-openjdk-devel.x86_64
+
+java -version
+
+-시스템에서 사용할 자바 버전 변경
+alternatives --config java
+alternatives --config javac
+
+---------------------------------------------------------------------------------------------------------
+3. 엘라스틱서치 다운로드 및 설치 (ec2-user 계정으로)
+wget https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-5.4.1.tar.gz
+tar zxvf elasticsearch-5.4.1.tar.gz
+
+4. 노드 복사
+cp  -R elasticsearch-5.4.1 node1
+cp  -R elasticsearch-5.4.1 node2
+cp  -R elasticsearch-5.4.1 node3
+---------------------------------------------------------------------------------------------------------
+5. 힙메모리 수정
+vi node1/config/jvm.options
+---------------------------------------------------------------------------------------------------------
+6. 실행
+node1/bin/elasticsearch
+---------------------------------------------------------------------------------------------------------
+7. 파일 최대 개방 갯수 늘리기 (루트 계정으로)
+-임시 조절
+ulimit -n 65536
+
+-영구 조절
+sudo vi /etc/security/limits.conf
+아래 텍스트 추가
+root hard nofile 65536
+root soft nofile 65536
+root hard nproc 65536
+root soft nproc 65536
+ec2-user hard nofile 65536
+ec2-user soft nofile 65536
+ec2-user hard nproc 65536
+ec2-user soft nproc 65536
+
+---------------------------------------------------------------------------------------------------------
+8. vm.max_map_count 부족 오류 해결 (루트 계정으로)
+-설정되어 있는 vm.max_map_count 값 확인
+$ sysctl vm.max_map_count
+
+-vm.max_map_count 값 설정
+$ sysctl -w vm.max_map_count=262144
+
+-conf 파일로 설정
+$ sudo vi /etc/sysctl.conf
+-아래 문자열 추가
+vm.max_map_count=262144
+-확인
+$ sudo sysctl -p
+---------------------------------------------------------------------------------------------------------
+9.head 설치
+-git 설치
+yum install git
+
+-npm 설치
+sudo yum install epel-release
+yum install npm --enablerepo=epel
+
+-다운로드
+git clone git://github.com/mobz/elasticsearch-head.git
+
+-설치 및 실행
+cd elasticsearch-head
+npm install
+npm run start
+
+- 확인
+http://{주소}:9100
+
+-외부에서 보기
+config/elasticsearch.yml에 추가
+http.cors.enabled: true
+http.cors.allow-origin: "*"
+
+http.cors.allow-headers: Authorization  (http://localhost:9100/?auth_user=elastic&auth_password=changeme)
+
+
+9-1 우분트에서 elasticsearch-head 설치법
+
+1. git이 설치되었다는 전제하에 소스 다운로드
+git clone git://github.com/mobz/elasticsearch-head.git
+
+2. npm 패키지 설치
+sudo apt install npm
+
+3. 소스로 이동
+cd elasticsearch-head
+
+4. nodejs-legacy
+sudo apt-get install nodejs-legacy
+
+5. /usr/local 에 설치되서 생기는 권한 문제 해결을 위해
+아래와 같이 일반 계정 홈에 .npmrc 파일 생성
+
+cat >>~/.npmrc <<NPMRC
+root=$HOME/.node_libraries
+binroot=$HOME/bin
+manroot=$HOME/share/man
+NPMRC
+
+6. elasticsearch-head를 설치
+npm install
+
+7. 실행
+npm rutn start
+
+
+---------------------------------------------------------------------------------------------------------
+10. 은전한닢 설치하기
+-쉬운 설치 법
+bash <(curl -s https://bitbucket.org/eunjeon/seunjeon/raw/master/elasticsearch/scripts/downloader.sh) -e 5.4.1 -p 5.4.1.1
+bin/elasticsearch-plugin install file://`pwd`/elasticsearch-analysis-seunjeon-5.4.1.1.zip
+
+-테스트 해보기 (분석기 설정
+PUT http://localhost:9200/news/_settings
+ {
+    "index":{
+        "analysis":{
+         "analyzer":{
+           "korean":{
+             "type":"custom",
+             "tokenizer":"seunjeon_default_tokenizer"
+           }
+         },
+         "tokenizer": {
+           "seunjeon_default_tokenizer": {
+             "type": "seunjeon_tokenizer",
+             "index_eojeol": false,
+             "user_words": ["낄끼+빠빠,-100", "c\\+\\+", "어그로", "버카충", "abc마트"]
+           }
+         }
+        }
+    }
+ }
+- 테스트 분석
+
+http://localhost:9200/_analyze?analyzer=korean&text=한글형태소분석기
+
+혹은
+
+{
+  "analyzer" : "korean",
+  "text" : "한글형태소분석기 "
+}
+---------------------------------------------------------------------------------------------------------
+
+11. visualvm 설치
+https://visualvm.github.io/download.html
+-Dcom.sun.management.jmxremote
+-Dcom.sun.management.jmxremote.port=9999
+-Dcom.sun.management.jmxremote.rmi.port=9998
+-Dcom.sun.management.jmxremote.ssl=false
+-Dcom.sun.management.jmxremote.authenticate=false
+-Djava.rmi.server.hostname=52.78.3.42
+
+

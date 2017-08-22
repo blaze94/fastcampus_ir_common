@@ -46,8 +46,8 @@
 #>tar zxvf elasticsearch-5.1.1.tar.gz
 #>cd elasticsearch-5.1.1/bin
 #>./elasticsearch-plugin install https://bitbucket.org/eunjeon/mecab-ko-lucene-analyzer/downloads/elasticsearch-analysis-mecab-ko-5.1.1.0.zip
-#>cp ~/mecab-java-0.996/MeCab.jar ../elasticsearch-5.1.1/plugins/elasticsearch-analysis-mecab-ko/
 
+del #>cp ~/mecab-java-0.996/MeCab.jar ../elasticsearch-5.1.1/plugins/elasticsearch-analysis-mecab-ko/
 
 #>vi .bash_profile
 export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
@@ -55,7 +55,7 @@ source .bash_profile
 
 
 7) E/S 기동
-sudo sysctl -w vm.max_map_count=26214
+sudo sysctl -w vm.max_map_count=262144
 jvm 확인
 
 외부 노출 설정 확인

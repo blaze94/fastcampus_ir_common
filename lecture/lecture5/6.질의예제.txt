@@ -1,0 +1,227 @@
+1. 쿼리스트링 쿼리
+일반적인 lucene boolean 파서 문법을 따름
+http://localhost:9200/인덱스/타입/_search -d ‘
+{
+    "query" : {
+        "query_string" : {
+            "query" : "elastic"
+        }
+    }
+}
+추가 가능 옵션
+query
+fields
+default_operator
+analyzer
+minimum_should_match
+
+
+2.TERM  쿼리 ,TERM 필터
+Term쿼리
+http://localhost:9200/인덱스/타입/_search -d ‘
+    {
+        "query" : {
+            "term" : {
+                "title" : "문재인"
+        }
+    }
+}
+
+Term 필터
+http://localhost:9200/인덱스/타입/_search -d ‘
+{
+    "query" : {
+        "filtered" : {
+            "query" : {
+                "match_all" : {}
+            }
+        },
+        "filter" : {
+            "term": {
+                "tags":"elastic"
+            }
+        }
+    }
+}
+
+Terms 쿼리 (다중 텀)
+http://localhost:9200/인덱스/타입/_search -d ‘
+{
+    "query" : {
+        "terms" : {
+            "title" : ["문재인","대통령"],
+            "minimum_should_match": 2
+        }
+    }
+}
+
+3. Match 쿼리
+http://localhost:9200/인덱스/타입/_search -d ‘
+{
+    "query" : {
+        "match" : {
+            "title" : {
+                "query":"Elastic Search",
+                "operator":"and"
+            }
+        }
+    }
+}
+4.Phrase 쿼리
+http://localhost:9200/인덱스/타입/_search -d ‘
+{
+    "query" : {
+        "match" : {
+            "title" : {
+                "type": "phrase",
+                "query": "elastic search",
+                "slop": 1
+            }
+        }
+    }
+}
+
+5. Multi Match 쿼리
+http://localhost:9200/인덱스/타입/_search -d ‘
+{
+    "query" : {
+        "multi_match" : {
+            "query" : "Elastic Search",
+            "fields":["title","author"]
+        }
+    }
+}
+
+6. RANGE 쿼리,RANGE 필터
+Range 쿼리
+http://localhost:9200/인덱스/타입/_search -d ‘
+{
+    "query" : {
+        "range" : {
+            "created_on" : {
+                "gt":"2017-01-01",
+                "lt":"2017-10-01"
+            }
+        }
+    }
+}
+Range 필터
+http://localhost:9200/인덱스/타입/_search -d ‘
+{
+    "query" : {
+        "filtered" : {
+            "query " : {
+                "match_all" : {}
+            }
+        },
+        "filter" : {
+            "range": {
+                "created_on" : {
+                    "gt":"2017-01-01",
+                    "lt":"2017-10-01"
+                }
+            }
+        }
+    }
+}
+
+7. NESTED 쿼리(중첩쿼리)
+
+1) 중첩 매핑 설정
+-XPUT http://localhost:9200/nested_index/
+{
+  "mappings": {
+    "nested_type": {
+      "properties": {
+        "user": {
+          "type": "nested"
+        }
+      }
+    }
+  }
+}
+
+2) 데이터 입력
+-XPUT http://localhost:9200/nested_index/nested_type/1
+{
+  "group" : "fans",
+  "user" : [
+    {
+      "first" : "John",
+      "last" :  "Smith"
+    },
+    {
+      "first" : "Alice",
+      "last" :  "White"
+    }
+  ]
+}
+
+3) 중첩 쿼리
+
+-XPOST http://localhost:9200/nested_index/_search
+{
+  "query": {
+    "nested": {
+      "path": "user",
+      "query": {
+        "bool": {
+          "must": [
+            { "match": { "user.first": "Alice" }},
+            { "match": { "user.last":  "Smith" }}
+          ]
+        }
+      }
+    }
+  }
+}
+
+
+8. Parent-Child 릴레이션 쿼리
+1) 데이터 매핑
+** 부모는 매핑 정의가 되어 있지 않아야 함
+
+PUT my_index
+{
+  "mappings": {
+    "my_parent": {},
+    "my_child": {
+      "_parent": {
+        "type": "my_parent"
+      }
+    }
+  }
+}
+
+2) 데이터 입력
+PUT my_index/my_parent/1
+{
+  "text": "This is a parent document"
+}
+
+PUT my_index/my_child/2?parent=1
+{
+  "text": "This is a child document"
+}
+
+PUT my_index/my_child/3?parent=1&refresh=true
+{
+  "text": "This is another child document"
+}
+
+
+3) Has_Child 쿼리
+GET my_index/my_parent/_search
+{
+  "query": {
+    "has_child": {
+      "type": "my_child",
+      "query": {
+        "match": {
+          "text": "child document"
+        }
+      }
+    }
+  }
+}
+
