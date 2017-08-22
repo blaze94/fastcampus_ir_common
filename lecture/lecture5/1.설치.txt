@@ -178,11 +178,16 @@ http://localhost:9200/_analyze?analyzer=korean&text=한글형태소분석기
 
 11. visualvm 설치
 https://visualvm.github.io/download.html
+
+config/jvm.options
+추가
 -Dcom.sun.management.jmxremote
 -Dcom.sun.management.jmxremote.port=9999
 -Dcom.sun.management.jmxremote.rmi.port=9998
 -Dcom.sun.management.jmxremote.ssl=false
 -Dcom.sun.management.jmxremote.authenticate=false
--Djava.rmi.server.hostname=52.78.3.42
+-Djava.rmi.server.hostname=52.79.80.70
 
 
+jstat 이용하기
+jstat -gc 13963 1000
