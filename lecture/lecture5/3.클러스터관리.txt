@@ -10,7 +10,7 @@ $ curl -XPUT 'localhost:9200/_cluster/settings?pretty=true' -d
     }
 }
 
-2) 1개 노드 셧다운  원하는 작업 후
+2) 1개 노드 셧다운  원하는 작업 후++
 
 3) 클러스터의 리밸런싱 설정을 enable
 $ curl -XPUT 'localhost:9200/_cluster/settings?pretty=true' -d
