@@ -52,29 +52,45 @@ PUT http://localhost:9200/news
 2)_mapping API에 바로 입력하는 경우
 PUT http://localhost:9200/news/_mapping/article
 {
-  "properties": {
-    "title": {
-      "type" : "text"
-    },
-    "link" : {
-      "type" : "string"
-    },
-    "description" : {
-      "type" : "text"
-    },
-    "author" : {
-      "type" : "keyword"
-    },
-    "media" : {
-      "type" : "keyword"
-    },
-    "category" : {
-      "type" : "keyword"
-    },
-    "modDate" : {
-      "type" : "date"
-    }
-  }
+      "properties": {
+        "title": {
+          "type" : "text",
+          "analyzer": "korean",
+          "fields": {
+              "raw": {
+                "type":  "keyword"
+              }
+            },
+            "boost": 10
+        },
+        "link" : {
+          "type" : "string"
+        },
+        "description" : {
+            "type" : "text",
+            "analyzer": "korean",
+            "boost": 1
+        },
+        "author" : {
+            "type" : "text",
+            "analyzer": "korean",
+            "fields": {
+              "raw": {
+                "type":  "keyword"
+              }
+            },
+            "boost": 5
+        },
+        "media" : {
+          "type" : "keyword"
+        },
+        "category" : {
+          "type" : "keyword"
+        },
+        "modDate" : {
+          "type" : "date"
+        }
+      }
 }
 
 ---------------------------------------------------------------------------------------------------------

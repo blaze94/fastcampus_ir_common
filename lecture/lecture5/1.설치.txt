@@ -202,12 +202,13 @@ PUT http://localhost:9200/news
         "tokenizer": {
           "seunjeon_tokenizer": {
             "type": "seunjeon_tokenizer",
-            "user_words": ["낄끼빠빠,-100", "버카충"]
+            "user_words": ["낄끼빠빠,-100", "버카충","네네+치킨"]
           },
           "noun_tokenizer": {
             "type": "seunjeon_tokenizer",
             "index_eojeol": false,
-            "index_poses": ["N"]
+            "index_poses": ["N"],
+            "decompound": true
           }
         }
       }
