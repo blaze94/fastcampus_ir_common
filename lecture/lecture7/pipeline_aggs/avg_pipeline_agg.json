@@ -1,0 +1,23 @@
+{
+  "size": 0,
+  "aggs": {
+    "sum_per_year": {
+      "date_histogram": {
+        "field": "submit_date",
+        "interval": "year"
+      },
+      "aggs": {
+        "sum_point": {
+          "sum": {
+            "field": "points"
+          }
+        }
+      }
+    },
+    "avg_monthly_points": {
+      "avg_bucket": {
+        "buckets_path": "sum_per_year>sum_point"
+      }
+    }
+  }
+}

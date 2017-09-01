@@ -1,0 +1,24 @@
+{
+  "size": 0,
+  "aggs": {
+    "my_date_histo": {
+      "date_histogram": {
+        "field": "submit_date",
+        "interval": "month"
+      },
+      "aggs": {
+        "the_sum": {
+          "sum": {
+            "field": "points"
+          }
+        },
+        "thirtieth_difference": {
+          "serial_diff": {
+            "buckets_path": "the_sum",
+            "lag" : 1
+          }
+        }
+      }
+    }
+  }
+}

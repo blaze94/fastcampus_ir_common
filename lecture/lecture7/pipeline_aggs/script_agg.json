@@ -1,0 +1,41 @@
+{
+  "size": 0,
+  "aggs" : {
+    "point_per_month" : {
+      "date_histogram" : {
+        "field" : "submit_date",
+        "interval" : "month"
+      },
+      "aggs": {
+        "total_point": {
+          "sum": {
+            "field": "points"
+          }
+        },
+        "utah_filter": {
+          "filter": {
+            "term": {
+              "team" : "Utah Jazz"
+            }
+          },
+          "aggs": {
+            "sum_point": {
+              "sum": {
+                "field": "points"
+              }
+            }
+          }
+        },
+        "utah-percentage": {
+          "bucket_script": {
+            "buckets_path": {
+              "tPoint": "utah_filter>sum_point",
+              "totalPoint": "total_point"
+            },
+            "script": "params.tPoint / params.totalPoint * 100"
+          }
+        }
+      }
+    }
+  }
+}

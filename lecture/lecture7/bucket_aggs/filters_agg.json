@@ -1,0 +1,13 @@
+{
+  "size": 0,
+  "aggs" : {
+    "messages" : {
+      "filters" : {
+        "filters" : {
+          "errors" :   { "match" : { "body" : "error"   }},
+          "warnings" : { "match" : { "body" : "warning" }}
+        }
+      }
+    }
+  }
+}

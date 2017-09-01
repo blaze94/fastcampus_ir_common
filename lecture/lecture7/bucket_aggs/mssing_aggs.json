@@ -1,0 +1,10 @@
+{
+	"size" : 0,
+	"aggs" : {
+		"missing_date" : {
+			"missing": {
+				"field" : "submit_date"
+			}
+		}
+	}
+}

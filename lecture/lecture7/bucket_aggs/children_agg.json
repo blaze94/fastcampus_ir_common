@@ -1,0 +1,73 @@
+1) 부모자식 릴레이션쉽 매핑
+PUT child_example
+{
+  "mappings": {
+    "answer" : {
+      "_parent" : {
+        "type" : "question"
+      }
+    }
+  }
+}
+
+2) 부모값 입력
+PUT child_example/question/1
+{
+  "body": "<p>I have Windows 2003 server and i bought a new Windows 2008 server...",
+  "title": "Whats the best way to file transfer my site from server to a newer one?",
+  "tags": [
+    "windows-server-2003",
+    "windows-server-2008",
+    "file-transfer"
+  ]
+}
+
+3) 자식값 입력
+PUT child_example/answer/1?parent=1&refresh
+{
+  "owner": {
+    "location": "Norfolk, United Kingdom",
+    "display_name": "Sam",
+    "id": 48
+  },
+  "body": "<p>Unfortunately you're pretty much limited to FTP...",
+  "creation_date": "2009-05-04T13:45:37.030"
+  }
+PUT child_example/answer/2?parent=1&refresh
+{
+  "owner": {
+    "location": "Norfolk, United Kingdom",
+    "display_name": "Troll",
+    "id": 49
+  },
+  "body": "<p>Use Linux...",
+  "creation_date": "2009-05-05T13:45:37.030"
+}
+
+4) aggregation
+POST child_example/_search?size=0
+{
+  "aggs": {
+    "top-tags": {
+      "terms": {
+        "field": "tags.keyword",
+        "size": 10
+    },
+    "aggs": {
+      "to-answers": {
+        "children": {
+         "type" : "answer"
+        },
+        "aggs": {
+        "top-names": {
+          "terms": {
+            "field": "owner.display_name.keyword",
+            "size": 10
+          }
+        }
+        }
+      }
+    }
+    }
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "size" : 0,
+  "aggs" : {
+    "team_agg" : {
+      "terms" : {
+        "field" : "team"
+      },
+      "aggs" : {
+        "name_agg" : {
+          "terms" : {
+            "field" : "name"
+          }
+        ,
+          "aggs" : {
+            "avg_agg" : {
+              "stats" : {
+                "field" : "points"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

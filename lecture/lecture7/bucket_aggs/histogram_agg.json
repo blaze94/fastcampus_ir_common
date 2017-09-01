@@ -1,0 +1,10 @@
+{
+  "aggs" : {
+    "count_month" : {
+      "histogram" : {
+        "field" : "points",
+        "interval" : "10"
+      }
+    }
+  }
+}

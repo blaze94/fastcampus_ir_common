@@ -50,7 +50,7 @@ PUT http://localhost:9200/news
 }
 
 2)_mapping API에 바로 입력하는 경우
-PUT http://localhost:9200/news/_mapping/article
+PUT http://localhost:9200/news/_mappings/article
 {
       "properties": {
         "title": {
