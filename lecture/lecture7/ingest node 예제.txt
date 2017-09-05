@@ -1,0 +1,67 @@
+1. 데이터 파이프 라인 생성
+
+PUT localhost:9200/_ingest/pipeline/parse_nyc_csv
+{
+ "description": "Parsing the NYC stations",
+ "processors": [
+   {
+     "grok": {
+       "field": "station",
+       "patterns": [
+         "%{WORD:division},%{DATA:line},%{DATA:station_name},%{NUMBER:location.lat},%{NUMBER:location.lon},%{DATA},%{DATA},%{DATA},%{DATA},%{DATA},%{DATA},%{DATA},%{DATA},%{DATA},%{DATA},%{DATA},%{DATA:entrance_type},%{DATA:entry},%{DATA:exit_only},%{DATA:vending}"
+       ]
+     }
+   },
+   {
+     "remove": {
+       "field": "station"
+     }
+   }
+ ]
+}
+​
+2. 파이프라인 조회
+GET localhost:9200/_ingest/pipeline/parse_nyc_csv
+​
+3.시뮬레이션
+{
+ "pipeline": {
+   "description": "Parsing the NYC stations",
+   "processors": [
+     {
+       "grok": {
+         "field": "station",
+         "patterns": [
+           "%{WORD:division},%{DATA:line},%{DATA:station_name},%{NUMBER:location.lat},%{NUMBER:location.lon},%{DATA},%{DATA},%{DATA},%{DATA},%{DATA},%{DATA},%{DATA},%{DATA},%{DATA},%{DATA},%{DATA},%{DATA:entrance_type},%{DATA:entry},%{DATA:exit_only},%{DATA:vending}"
+         ]
+       }
+     },
+     {
+       "remove": {
+         "field": "station"
+       }
+     }
+   ]
+ },
+ "docs": [
+   {
+     "_index": "subway_info",
+     "_type": "station",
+     "_id": "AVvJZVQEBr2flFKzrrkr",
+     "_score": 1,
+     "_source": {
+       "station": "BMT,4 Avenue,53rd St,40.645069,-74.014034,R,,,,,,,,,,,Stair,NO,Yes,NO,NONE,,FALSE,,TRUE,4th Ave,52nd St,NW,40.645619,-74.013688,'(40.645069, -74.014034)','(40.645619, -74.013688)'"
+     }
+   }
+ ]
+}
+​
+4.데이터 입력
+-POST localhost:9200/subway_info_v1/station?pipeline=parse_nyc_csv
+{
+ "station": "BMT,4 Avenue,59th St,40.641362,-74.017881,N,R,,,,,,,,,,Stair,YES,,YES,NONE,,FALSE,,TRUE,4th Ave,60th St,SW,40.640682,-74.018857,'(40.641362, -74.017881)','(40.640682, -74.018857)'"
+}
+​
+
+5.확인
+localhost:9200/subway_info_v1/station/_search
