@@ -1,0 +1,125 @@
+1. Metrics Aggregation
+*Avg Aggregation : 평균값 계산
+*Cardinality Aggregation : 유일값(unique,distinct) 계산
+Extended Stats Aggregation : 확장된 상태값 계산 (최소,최대,평균,합,분산,공분산,표준편차)
+Geo Bounds Aggregation : 좌표 범위 집계
+*Geo Centroid Aggregation : 좌표 중심점 기준 집계
+Max Aggregation : 최대값 계산
+Min Aggregation : 최소값 계산
+*Percentiles Aggregation : 백분위값 계산 (이상치를 찾을때)
+Percentile Ranks Aggregation : 특정값 미만인 관측값의 백분위
+Scripted Metric Aggregation : 스크립트를 사용하여 메트릭스 계산
+Stats Aggregation : 기본 상태값 계산(최소,최대,평균,합)
+*Sum Aggregation : 합계값 계산
+Top hits Aggregation : 연관성이 가장 높은 결과를 에그리게이션
+Value Count Aggregation : 집계된 문서의 추출한 값의 수 계(예 평균을 내고자 할때 전체 계산되어진 값의 수 추출)
+
+2. Bucket Aggregations
+Adjacency Matrix Aggregation : 인접행렬을 반환하는 버킷
+Children Aggregation : 매핑구조가 parent-children 구조일때 children 데이터를 집계
+*Date Histogram Aggregation : 날짜를 일정 간격으로 집계
+*Date Range Aggregation : 날짜를 특정 범위로 집계
+Diversified Sampler Aggregation : 하위집계처리시 최고 득점 문서로 샘플을 제한함 (관련성 높은 항목에 대해서 분석 초점을 강화,편향제거)
+Filter Aggregation : 현재 검색결과와 관련없이 특정하게 계산 범위를 줄일때
+Filters Aggregation
+Geo Distance Aggregation : 좌표 거리별 버킷
+GeoHash grid Aggregation : 지오해쉬별 버킷
+Global Aggregation : 전체 문서에 대한 어그리게이션 버킷
+Histogram Aggregation : 특정 간격 값에 대한 버킷
+IP Range Aggregation : IP 범위별 버킷
+Missing Aggregation : 값이 없는 필드에 대한 버킷
+Nested Aggregation : 매핑 타입이 중첩구조일 하위 요소를  어그리게이션 할때
+Range Aggregation : 값 범위별 버킷
+Reverse nested Aggregation : 매핑 타입이 중첩구조일때 상위 요소를 어그리게이션 할때
+예) 게시글 + 댓글 구조
+게시글을 가장 많이 게시한 유저별 버킷에서
+그 게시글의 가장 많은 태그를 가져옴
+Sampler Aggregation : 하위집계처리시 최고 득점 문서로 샘플을 제한함
+Significant Terms Aggregation :
+Terms Aggregation
+
+3. Pipeline Aggregations
+Avg Bucket Aggregation : 평균값을 파이프라인으로 집계 (형제값)
+예)
+"aggs": {
+    "sales_per_month": {
+      "date_histogram": {
+        "field": "date",
+        "interval": "month"
+      },
+      "aggs": {
+        "sales": {
+          "sum": {
+            "field": "price"
+          }
+        }
+      }
+    },
+    "avg_monthly_sales": {
+      "avg_bucket": {
+        "buckets_path": "sales_per_month>sales"
+      }
+    }
+  }
+
+Derivative Aggregation : date_histogram 등에서 상위 agg 값에 대한 차잇 값 계산
+Max Bucket Aggregation : 최대값을 파이프라인으로 집계 (형제값)
+Min Bucket Aggregation : 최소값을 파이프라인으로 집계 (형제값)
+Sum Bucket Aggregation : 합계값을 파이프라인으로 집계 (형제값)
+Stats Bucket Aggregation : 상태값(최소,최대,평균,합) 파이프라인으로 집계 (형제값)
+Extended Stats Bucket Aggregation : 확장 상태값을 파이프라인으로 집계 (형제값)
+Percentiles Bucket Aggregation
+Moving Average Aggregation : 이동 평균 파이프라인 계산
+예)
+data = [1,2,3,4,5,6,7,8,9,10]
+(1 + 2 + 3 + 4 + 5) / 5 = 3
+(2 + 3 + 4 + 5 + 6) / 5 = 4
+(3 + 4 + 5 + 6 + 7) / 5 = 5
+
+Cumulative Sum Aggregation : 누적값 파이프라인 계산
+Bucket Script Aggregation : 버킷값을 파이프라인으로 받아서 스크립트 계산
+예)
+{
+    "bucket_script": {
+        "buckets_path": {
+            "my_var1": "the_sum",
+            "my_var2": "the_value_count"
+        },
+        "script": "params.my_var1 / params.my_var2"
+    }
+}
+
+Bucket Selector Aggregation : 특정 조건인 버킷만 선택
+
+예
+
+"sales_bucket_filter": {
+                "bucket_selector": {
+        "buckets_path": {
+          "totalSales": "total_sales"
+        },
+        "script": "params.totalSales > 200"
+    }
+}
+
+Serial Differencing Aggregation : 타임시리즈에서 시간차의 값을 기간에서 빼는 기법 (date_histogram과 같이 사용)
+f(x) = f(xt) - f(xt-n)
+
+4. Matrix Aggregations
+다중 필드값을 매트릭스 연산을 실시
+Matrix Stats
+얻을 수 있는 값
+count
+계산에 포함된 필드당 샘플수
+mean
+평균
+variance
+분산값
+skewness
+비대칭도
+kurtosis
+첨도 (확률 분포의 뾰족한 정도
+covariance
+공분산
+correlation
+상관도 두 변수간의 선형적 관계
