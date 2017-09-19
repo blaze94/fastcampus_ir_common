@@ -1,0 +1,108 @@
+1. 형태소 분석기 세팅
+52.79.91.255:9200/news
+{
+    "index":{
+        "analysis":{
+            "analyzer":{
+                "korean":{
+                     "type":"custom",
+                     "tokenizer":"seunjeon_default_tokenizer",
+                     "filter" : ["lowercase","synonym"]
+                },
+                "jaso" : {
+                    "tokenizer" : "keyword",
+                    "filter" : "jaso-filter"
+                },
+                "nfd_normalized": {
+                    "tokenizer": "standard",
+                    "char_filter": [
+                      "nfd_normalizer"
+                    ]
+                }
+            },
+            "tokenizer": {
+                "seunjeon_default_tokenizer": {
+                 "type": "seunjeon_tokenizer",
+                 "index_eojeol": false,
+                 "pos_tagging": false,
+                 "user_words": ["낄끼+빠빠,-100", "c\\+\\+", "어그로", "버카충", "abc마트"]
+                }
+            },
+            "char_filter": {
+                "nfd_normalizer": {
+                  "type": "icu_normalizer",
+                  "name": "nfc",
+                  "mode": "decompose"
+                }
+            },
+            "filter" : {
+                "synonym" : {
+                    "type" : "synonym",
+                    "synonyms" : [
+                        "i-pod, i pod => ipod",
+                        "삼성, samsung"
+                    ],
+                    "synonyms_path" : "analysis/synonym.txt"
+                }
+            }
+        }
+    }
+}
+
+2. 매핑
+52.79.91.255:9200/news/_mappings                                                                                                                                                          43,1         모두
+{
+ "article" : {
+      "template" : "article",
+      "version" : 50001,
+      "settings" : {
+        "index.refresh_interval" : "5s"
+      },
+      "mappings" : {
+          "article" : {
+            "properties" : {
+              "modDate" : {
+                "type" : "date"
+              },
+              "author" : {
+                "type" : "keyword",
+                "copy_to" : [ "suggest", "spell"]
+              },
+              "link" : {
+                "type" : "string"
+              },
+              "description" : {
+                "type" : "text",
+                "analyzer" : "korean"
+              },
+              "media" : {
+                "type" : "text",
+                "analyzer" : "korean",
+                "copy_to" : [ "suggest", "spell"]
+              },
+              "title" : {
+                "type" : "text",
+                "analyzer" : "korean",
+                "fields": {
+                  "raw": {
+                    "type":  "keyword"
+                },
+                "copy_to" : [ "suggest", "spell"]
+              },
+              "category" : {
+                "type" : "keyword",
+                "copy_to" : [ "suggest", "spell"]
+              },
+              "spell" : {
+                  "type" : "text",
+                  "analyzer": "nfd_normalized"
+              },
+              "suggest" : {
+                 "type" : "jaso",
+                 "search_analyzer" : "keyword"
+              }
+          }
+        }
+      }
+   }
+}

@@ -334,6 +334,7 @@ filter {
   }
 }
 
+
 output {
   stdout {
         codec => rubydebug
@@ -352,7 +353,40 @@ output {
 
 
 
+
  6. 타임라이언 예제
  .es,es(metric=cardinality:user)
  .es(timefield="time_slot",index="seoul-metro-2016",metric=sum:people_in,q=station_name:상왕십리).label("상왕십리역"),.es(timefield="time_slot",index="seoul-metro-2016",metric=sum:people_in,q=station_name:왕십리).label("왕십리")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 

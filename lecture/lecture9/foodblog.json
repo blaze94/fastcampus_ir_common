@@ -1,0 +1,46 @@
+{
+  "properties": {
+    "lastpublished": {
+      "type": "date"
+    },
+    "publishdate": {
+      "type": "date"
+    },
+    "author": {
+      "type": "keyword"
+    },
+    "url": {
+      "type": "keyword"
+    },
+    "imgsrc": {
+      "type": "keyword"
+    },
+    "content": {
+      "type": "text",
+      "analyzer": "korean",
+      "index_options" : "offsets"
+    },
+    "title": {
+      "type": "text",
+      "analyzer": "korean",
+      "fields": {
+        "raw": {
+          "type": "keyword"
+        }
+      },
+      "index_options" : "offsets"
+    },
+    "tags": {
+      "type": "keyword"
+    },
+    "spell": {
+      "type": "text",
+      "analyzer": "nfd_normalized"
+    },
+    "suggest": {
+      "type": "text",
+      "analyzer": "jaso",
+      "search_analyzer": "keyword"
+    }
+  }
+}

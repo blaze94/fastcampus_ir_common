@@ -1,0 +1,9 @@
+{
+  "properties": {
+    "suggest": {
+      "type": "text",
+      "analyzer": "jaso",
+      "search_analyzer": "keyword"
+    }
+  }
+}
