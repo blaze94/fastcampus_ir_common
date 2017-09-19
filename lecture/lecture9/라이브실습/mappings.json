@@ -1,0 +1,78 @@
+{
+  "properties": {
+    "idx": {
+      "type": "integer"
+    },
+    "title": {
+      "type": "text",
+      "analyzer": "korean_analzyer",
+      "fields": {
+        "spells": {
+          "type": "text",
+          "analyzer": "spell_analyzer"
+        },
+        "autocomplete" : {
+          "type": "text",
+          "analyzer": "autocomplete_index_analzyer",
+          "search_analyzer": "autocomplete_search_analzyer"
+
+        }
+      },
+      "index_options" : "offsets"
+    },
+    "link": {
+      "type": "string"
+    },
+    "category1": {
+      "type": "text",
+      "analyzer": "korean_analzyer",
+      "fields": {
+        "raw" : {
+          "type" : "keyword"
+        }
+      }
+    },
+    "category2": {
+      "type": "text",
+      "analyzer": "korean_analzyer",
+      "fields": {
+        "raw" : {
+          "type" : "keyword"
+        }
+      }
+    },
+    "description": {
+      "type": "text",
+      "analyzer": "korean_analzyer",
+      "fields": {
+        "spells": {
+          "type": "text",
+          "analyzer": "spell_analyzer"
+        }
+      },
+      "index_options" : "offsets"
+    },
+    "telephone": {
+      "type": "keyword"
+    },
+    "imgsrc": {
+      "type": "keyword"
+    },
+    "address": {
+      "type": "text",
+      "analyzer": "korean_analzyer",
+      "index_options" : "offsets"
+    },
+    "roadaddress": {
+      "type": "text",
+      "analyzer": "korean_analzyer",
+      "index_options" : "offsets"
+    },
+    "rate" : {
+      "type" : "integer"
+    },
+    "location": {
+      "type": "geo_point"
+    }
+  }
+}
