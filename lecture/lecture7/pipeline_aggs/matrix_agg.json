@@ -1,9 +1,0 @@
-{
-  "aggs": {
-    "matrixstats": {
-      "matrix_stats": {
-        "fields": ["points", "rebounds"]
-      }
-    }
-  }
-}
