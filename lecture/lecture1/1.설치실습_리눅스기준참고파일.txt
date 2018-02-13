@@ -135,7 +135,7 @@ PUT http://localhost:9200/news
   }
 }
 
-2) 인덱스가 이미 존재하면
+2) 인덱스가 이미 존재하면2.기본데이터CRUD.txt
 -XPOST http://13.124.207.175:9200/news/_close
 -PUT http://13.124.207.175:9200/news/_settings
 {
