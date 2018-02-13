@@ -73,7 +73,7 @@ action.destructive_requires_name: true
 { "doc" : {"field2" : "value2"} }
 
 로컬 파일을 넣는법
-curl -XPOST 'http://localhost:9200/_bulk' -d @1.json
+curl -XPOST 'http://localhost:9200/_bulk' -H "Content-Type:application/json" --data-binary @test.json
 ---------------------------------------------------------------------------------------------------------
 
 6. 벌크 DELETE
@@ -114,15 +114,6 @@ input {
   }
 }
 
-    tracking_column => "updated_column"
-    tracking_column_type => "timestamp"
-
-    tracking_column => "id"
-
-
-    WHERE 절 추가 가능  "updated_column" > :sql_last_value
-    WHERE id > :sql_last_value"
-
 
 filter {
   mutate {
@@ -140,6 +131,20 @@ output {
           index => "news"
   }
 }
+
+JDBC 플러그인 추가기능
+
+tracking_column => "updated_column"
+tracking_column_type => "timestamp"
+
+tracking_column => "id"
+
+
+WHERE 절 추가 가능  "updated_column" > :sql_last_value
+WHERE id > :sql_last_value"
+
+
+
 ---------------------------------------------------------------------------------------------------------
 8. 라우팅
 -XPUT http://localhost:9200/news/article/1?routing=class1
