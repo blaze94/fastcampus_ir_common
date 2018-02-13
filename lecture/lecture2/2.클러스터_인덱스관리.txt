@@ -32,7 +32,7 @@ A. 색인을 중단없이 교체할 때
 1) 테스트용 색인 생성
 -XPUT http://localhost:9200/store_v1/item/1
 {
-  "title": "This is a document"
+  "title": "This is a document111"
 }
 
 2) 별칭을 걸어서 운영함
@@ -49,7 +49,7 @@ A. 색인을 중단없이 교체할 때
 3) 색인변경 이슈가 생겼을때 (다음버전 생성)
 http://localhost:9200/store_v2/item/1
 {
-  "title": "This is a document"
+  "title": "This is a document222"
 }
 
 4) 새로 생성한 색인이 이상이 없다면 별칭 교체
@@ -87,7 +87,7 @@ curl -XPUT localhost:9200/_template/template_2014_04 -d '
   "template" : "logs-2014-04-*",
   "aliases" : {
     "logs-2014-04" : {}
-  }``
+  }
 }
 '
 curl -XPUT localhost:9200/_template/template_2014 -d '
@@ -111,7 +111,7 @@ PUT /store/_settings
 }
 리플리카가 증가함
 
-2) 리플레쉬 시간 변경 (성능 고려 사항
+2) 리플레쉬 시간 변경 (성능 고려 사항)
 PUT /store/_settings
 {
     "index" : {
@@ -122,7 +122,6 @@ PUT /store/_settings
 3) 분석기 추가
 
 작업 순서
-
 색인 닫기
 POST /store/_close
 
@@ -157,7 +156,18 @@ POST /twitter/_open
       "cluster.routing.allocation.disk.watermark.low": "90%"
     }
 }'
-cluster.routing.allocation.disk.watermark.high
+cluster.routing.allocation.disk.watermark.high : 이값을 넘으면 샤드는 색인을 재배치함
+
+{
+  "transient": {
+    "cluster.routing.allocation.disk.watermark.low": "100gb",
+    "cluster.routing.allocation.disk.watermark.high": "50gb",
+    "cluster.routing.allocation.disk.watermark.flood_stage": "10gb",
+    "cluster.info.update.interval": "1m"
+  }
+}
+
+
 ---------------------------------------------------------------------------------------------------------
 6. split brain 현상 대응
 In case of Clustering
@@ -168,17 +178,71 @@ In case of Clustering
 
 discovery.zen.minimum_master_nodes: 2  (default 1)
 (master_eligible_nodes / 2) + 1
+
+
+
 ---------------------------------------------------------------------------------------------------------
-7. GC 모니터링
-jstat -gcutil -h5 [pid] 1000
-  - S0 : Survivor 영역 0 의 사용율 (현재의 용량에 대한 퍼센티지)
-  - S1 : Survivor 영역 1 의 사용율 (현재의 용량에 대한 퍼센티지)
-  - E : Eden 영역의 사용율 (현재의 용량에 대한 퍼센티지)
-  - O : Old 영역의 사용율 (현재의 용량에 대한 퍼센티지)
-  - P : Permanent 영역의 사용율 (현재의 용량에 대한 퍼센티지)
-  - YGC : Young 세대의 GC 이벤트수
-  - YGCT : Young 세대의 가베지 콜렉션 시간
-  - FGC : 풀 GC 이벤트수
-  - FGCT : 풀 가베지 콜렉션 시간
-  - GCT : 가베지 콜렉션총시간
+7. 재인덱싱
+POST _reindex
+{
+  "source": {
+    "index": "news"
+  },
+  "dest": {
+    "index": "new_news"
+  }
+}
+
+
+POST _reindex
+{
+  "source": {
+    "index": ["news","news3"]
+  },
+  "dest": {
+    "index": "newnew_news"
+  }
+}
+
+아이디가 겹칠경우는?
+
+{
+  "source": {
+    "index": ["news","news3"]
+  },
+  "dest": {
+    "index": "newnew_news",
+    "version_type": "external"   //혹은 internal
+  }
+}
+
+
+version_type
+internal :
+모든것을 덮어 씀
+
+external :
+설정 소스버전과 비교하여 없는 문서만 만들고
+대상 인덱스에 오래된 버전의 문서는 업데이트
+
+
+POST _reindex
+{
+  "conflicts": "proceed",   <--충돌을 만나면 진행할지 포기할지
+  "source": {
+    "index": "twitter"
+  },
+  "dest": {
+    "index": "new_twitter",
+    "op_type": "create"     <-- 생성이 안되어 있는 문서만 생성
+  }
+}
+
+
+
+
+
+
+
+
 ---------------------------------------------------------------------------------------------------------
