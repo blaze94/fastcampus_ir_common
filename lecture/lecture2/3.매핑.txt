@@ -4,6 +4,33 @@
 1) 인덱스에 PUT을 하며 타입을 JSON에 지정
 PUT http://localhost:9200/news
 {
+  "settings" : {
+    "index":{
+      "analysis":{
+        "analyzer":{
+          "korean":{
+            "type":"custom",
+            "tokenizer":"seunjeon_tokenizer"
+          },
+          "korean_noun": {
+            "type":"custom",
+            "tokenizer":"noun_tokenizer"
+          }
+        },
+        "tokenizer": {
+          "seunjeon_tokenizer": {
+            "type": "seunjeon_tokenizer",
+            "user_words": ["낄끼빠빠,-100", "버카충"]
+          },
+          "noun_tokenizer": {
+            "type": "seunjeon_tokenizer",
+            "index_eojeol": false,
+            "index_poses": ["N"]
+          }
+        }
+      }
+    }
+  },
   "mappings": {
     "article": {
       "properties": {
@@ -18,7 +45,7 @@ PUT http://localhost:9200/news
             "boost": 10
         },
         "link" : {
-          "type" : "string"
+          "type" : "keyword"
         },
         "description" : {
             "type" : "text",
@@ -64,7 +91,7 @@ PUT http://localhost:9200/news/_mappings/article
             "boost": 10
         },
         "link" : {
-          "type" : "string"
+          "type" : "keyword"
         },
         "description" : {
             "type" : "text",
@@ -105,45 +132,85 @@ GET http://localhost:9200/news/_mapping/article
 
 3. 색인을 위한 템플릿 추가
 
--XPUT 'localhost:9200/_template/test_temp
-
+-XPUT 'localhost:9200/_template/news_temp
 {
-    "template" : "test_*",
+    "template" : "news*",
     "settings" : {
         "index.refresh_interval" : "5s",
         "number_of_shards": 3,
-        "number_of_replicas": 1
-    },
-    "mappings" : {
-        "article" : {
-            "properties": {
-                "title": {
-                  "type" : "text"
+        "number_of_replicas": 1,
+        "index":{
+              "analysis":{
+                "analyzer":{
+                  "korean":{
+                    "type":"custom",
+                    "tokenizer":"seunjeon_tokenizer"
+                  },
+                  "korean_noun": {
+                    "type":"custom",
+                    "tokenizer":"noun_tokenizer"
+                  }
                 },
-                "link" : {
-                  "type" : "string"
-                },
-                "description" : {
-                  "type" : "text"
-                },
-                "author" : {
-                  "type" : "keyword"
-                },
-                "media" : {
-                  "type" : "keyword"
-                },
-                "category" : {
-                  "type" : "keyword"
-                },
-                "modDate" : {
-                  "type" : "date"
+                "tokenizer": {
+                  "seunjeon_tokenizer": {
+                    "type": "seunjeon_tokenizer",
+                    "user_words": ["낄끼빠빠,-100", "버카충"]
+                  },
+                  "noun_tokenizer": {
+                    "type": "seunjeon_tokenizer",
+                    "index_eojeol": false,
+                    "index_poses": ["N"]
+                  }
                 }
               }
+            }
+    },
+    "mappings" : {
+        "article": {
+          "properties": {
+            "title": {
+              "type" : "text",
+              "analyzer": "korean",
+              "fields": {
+                  "raw": {
+                    "type":  "keyword"
+                  }
+                },
+                "boost": 10
+            },
+            "link" : {
+              "type" : "keyword"
+            },
+            "description" : {
+                "type" : "text",
+                "analyzer": "korean",
+                "boost": 1
+            },
+            "author" : {
+                "type" : "text",
+                "analyzer": "korean",
+                "fields": {
+                  "raw": {
+                    "type":  "keyword"
+                  }
+                },
+                "boost": 5
+            },
+            "media" : {
+              "type" : "keyword"
+            },
+            "category" : {
+              "type" : "keyword"
+            },
+            "modDate" : {
+              "type" : "date"
+            }
+          }
         }
     }
 }
 
-인덱스명이 test_* 이하인 것은 템플릿을 따름
+인덱스명이 news* 이하인 것은 템플릿을 따름
 템플릿 조회
 -XGET 'localhost:9200/_template/test_temp
 
@@ -193,7 +260,6 @@ PUT store/item/1
 
 ---------------------------------------------------------------------------------------------------------
 5. 중첩된 매핑 (Array)
-
 1) 데이터 입력
 PUT http://localhost:9200/array_index/array_type/1
 {
@@ -398,40 +464,5 @@ Cross Match 안되는 것을 확인
     }
 }
 
-
-
-7. 템플릿
-
-템플릿 생성
-
-localhost:9200/_template/template_1?pretty
-{
-  "template": "te*",
-  "settings": {
-    "number_of_shards": 1
-  },
-  "mappings": {
-    "type1": {
-      "_source": {
-        "enabled": false
-      },
-      "properties": {
-        "host_name": {
-          "type": "keyword"
-        },
-        "created_at": {
-          "type": "date",
-          "format": "EEE MMM dd HH:mm:ss Z YYYY"
-        }
-      }
-    }
-  }
-}
-
-템플릿 삭제
-curl -XDELETE 'localhost:9200/_template/template_1?pretty'
-
-템플릿 조회
-curl -XGET 'localhost:9200/_template/template_1?pretty'
 
 
