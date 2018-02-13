@@ -102,7 +102,7 @@ news.conf 의 내용
 
 input {
   jdbc {
-    jdbc_driver_library => "mysql-connector-java-5.1.18.jar"
+    jdbc_driver_library => "/home/ec2-user/logstash-6.1.3/mysql-connector-java-5.1.18.jar"
     jdbc_driver_class => "com.mysql.jdbc.Driver"
     jdbc_connection_string => "jdbc:mysql://svn.queryjet.net:23306/newsdb"
     jdbc_user => "news_user"
@@ -113,6 +113,15 @@ input {
     schedule => "* * * * *"
   }
 }
+
+    tracking_column => "updated_column"
+    tracking_column_type => "timestamp"
+
+    tracking_column => "id"
+
+
+    WHERE 절 추가 가능  "updated_column" > :sql_last_value
+    WHERE id > :sql_last_value"
 
 
 filter {
