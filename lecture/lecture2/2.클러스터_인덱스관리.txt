@@ -1,4 +1,4 @@
-1. 리밸런싱
+1. 리밸런싱1
 
 1) 클러스터의 리밸런싱 설정을 disable
 -XGET http://localhost:9200/_cluster/settings?pretty=true
