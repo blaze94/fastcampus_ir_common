@@ -184,19 +184,19 @@ http://localhost:9200/books?analyzer=synonym&text=baby
 
 PUT my_index
 {
-  "settings": {
-    "analysis": {
-      "analyzer": {
-        "arirang_index": {
-          "type": "arirang_analyzer”
-         },
-        "arirang_query": {
-          "type": "arirang_analyzer",
-          ”queryMode": true
-        }  
-      }
-    }
-  }
+    "settings": {
+        "analysis": {
+            "analyzer": {
+                "arirang_index": {
+                    "type": "arirang_analyzer"
+                },
+                "arirang_query": {
+                    "type": "arirang_analyzer",
+                    "queryMode": true
+                }
+            }
+        }
+    }
 }
 
 PUT my_index
