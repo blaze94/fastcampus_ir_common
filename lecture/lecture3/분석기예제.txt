@@ -178,6 +178,49 @@ http://localhost:9200/books?analyzer=synonym&text=baby
   "analyzer" : "korean",
   "text" : "한글형태소분석기 "
 }
+
+
+5-1. 아리랑 한글 형태소 분석기 적용
+
+PUT my_index
+{
+  "settings": {
+    "analysis": {
+      "analyzer": {
+        "arirang_index": {
+          "type": "arirang_analyzer”
+         },
+        "arirang_query": {
+          "type": "arirang_analyzer",
+          ”queryMode": true
+        }  
+      }
+    }
+  }
+}
+
+PUT my_index
+{
+  "settings": {
+    "analysis": {
+      "analyzer": {
+        "arirang_index": {
+          "type": "arirang_analyzer”,
+           ”preserveVerb” : true
+         },
+        "arirang_query": {
+          "type": "arirang_analyzer",
+           ”queryMode": true,
+           ”preserveVerb” : true
+        }  
+      }
+    }
+  }
+}
+
+
+
+
 ---------------------------------------------------------------------------------------------------------
 6. 텍스트 디버깅 (elyzer)
 sudo pip install elyzer
