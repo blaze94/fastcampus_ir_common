@@ -266,6 +266,8 @@ Phrase Suggester
 소스 체크 아웃
 https://github.com/blaze94/qj-analyzer-plugin
 
+플러그인 인스톨
+node1/bin/elasticsearch-plugin install file://`pwd`/jaso-plugin-1.0.zip
 
 ---------------------------------------------------------------------------------------------------------
 8. 자동완성
@@ -308,13 +310,11 @@ POST _search
 {
     "query" : {
         "term" : {
-            "keyword" : "ㅅ"
+            "title.spell_edge" : "ㅅ"
+        }
     }
 }
 
 
-
-플러그인 인스톨
-node1/bin/elasticsearch-plugin install file://`pwd`/jaso-plugin-1.0.zip
 
 
