@@ -567,18 +567,242 @@ answer를 결과로 리턴됨을 확인
 parent를 결과로 리턴함을 확인
 
 
+9. Function Query
+
+{
+    "query": {
+        "function_score": {
+            "query": {
+                "match": { "product_name": "신발" }
+            },
+            "script_score" : {
+                "script" : {
+                  "inline": "Math.log(2 + doc['price'].value)"
+                }
+            }
+        }
+    }
+}
+
+
+{
+    "query": {
+        "function_score": {
+            "field_value_factor": {
+                "field": "price",
+                "factor": 1.2,
+                "modifier": "sqrt",
+                "missing": 1
+            }
+        }
+    }
+}
+
+
+10. SPAN 쿼리 (근접 연산자 쿼리)
+
+(A NEAR (B OR C*) NEAR D
+(A NEAR B) OR (A NEAR C*)
 
 
 
+{
+    "query": {
+        "span_near" : {
+            "clauses" : [
+                { "span_term" : { "product_name" : "운동화" } },
+                { "span_term" : { "product_name" : "플랫" } },
+                { "span_term" : { "product_name" : "단화" } }
+            ],
+            "slop" : 12,
+            "in_order" : false
+        }
+    }
+}
 
 
+{
+    "query": {
+        "span_containing" : {
+            "little" : {
+                "span_term" : { "product_name" : "스니커즈" }
+            },
+            "big" : {
+                "span_near" : {
+                    "clauses" : [
+                        { "span_term" : { "product_name" : "신발" } },
+                        { "span_term" : { "product_name" : "운동화" } }
+                    ],
+                    "slop" : 5,
+                    "in_order" : true
+                }
+            }
+        }
+    }
+}
 
 
+{
+    "query": {
+        "span_within" : {
+            "little" : {
+                "span_term" : { "product_name" : "스니커즈" }
+            },
+            "big" : {
+                "span_near" : {
+                    "clauses" : [
+                        { "span_term" : { "product_name" : "신발" } },
+                        { "span_term" : { "product_name" : "운동화" } }
+                    ],
+                    "slop" : 5,
+                    "in_order" : true
+                }
+            }
+        }
+    }
+}
 
 
+문제1 : (A NEAR (B OR C*) NEAR D
+
+-PUT span_test
+{
+    "mappings": {
+      "test": {
+        "properties": {
+          "title": {
+            "type": "text",
+            "fields": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            },
+            "index_options": "offsets"
+          }
+        }
+      }
+    }
+}
+
+PUT span_test
+{
+    "title" : "A 11 B"
+}
+PUT span_test
+{
+    "title" : "A 11 C"
+}
+PUT span_test
+{
+    "title" : "A 11 C1"
+}
+PUT span_test
+{
+    "title" : "A 11 B 11 D"
+}
+PUT span_test
+{
+    "title" : "A 11 C 11 D"
+}
+PUT span_test
+{
+    "title" : "A 11 C1 11 D"
+}
+
+{
+  "query": {
+    "span_near": {
+      "clauses": [
+        {
+          "span_near": {
+            "clauses": [
+              {
+                "span_term": {
+                  "title": "a"
+                }
+              },
+              {
+                "span_or": {
+                  "clauses": [
+                    {
+                      "span_term": {
+                        "title": "b"
+                      }
+                    },
+                    {
+                      "span_multi": {
+                        "match": {
+                          "prefix": {
+                            "title": "c"
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            ],
+            "slop": 12
+          }
+        },
+        {
+          "span_term": {
+            "title": "d"
+          }
+        }
+      ],
+      "slop": 12
+    }
+  }
+}
 
 
+문제2  : (A NEAR B) OR (A NEAR C*)
 
-
-
-
+{
+  "query": {
+    "span_or": {
+      "clauses": [
+        {
+          "span_near": {
+            "clauses": [
+              {
+                "span_term": {
+                  "title": "a"
+                }
+              },
+              {
+                "span_term": {
+                  "title": "b"
+                }
+              }
+            ],
+            "slop": 12
+          }
+        },
+        {
+          "span_near": {
+            "clauses": [
+              {
+                "span_term": {
+                  "title": "a"
+                }
+              },
+              {
+                "span_multi": {
+                  "match": {
+                    "prefix": {
+                      "title": "c"
+                    }
+                  }
+                }
+              }
+            ],
+            "slop": 12
+          }
+        }
+      ]
+    }
+  }
+}
