@@ -134,90 +134,6 @@ PUT product
 
 아리랑
 {
-  "settings" : {
-    "index":{
-      "analysis":{
-        "analyzer":{
-          "korean":{
-            "type":"custom",
-            "char_filter" :  ["html_strip"],
-            "tokenizer":"arirang_tokenizer",
-            "filter" : ["arirang_filter","lowercase","my_synonym","my_stop"]
-          }
-        },
-        "filter" : {
-            "my_synonym" : {
-                "type" : "synonym",
-                "synonyms_path" : "analysis/synonym.txt"
-            },
-            "my_stop" : {
-                "type" : "stop",
-                "stopwords_path" : "analysis/stopword.txt"
-            }
-        }
-      }
-    }
-  },
-  "mappings": {
-    "item": {
-      "_all": {
-         "enabled": false
-      },
-      "properties": {
-        "product_name": {
-          "type" : "text",
-          "analyzer": "korean",
-          "fields": {
-                "raw": {
-                    "type":  "keyword"
-                }
-            }
-        },
-        "price" : {
-          "type" : "integer"
-        },
-        "category": {
-          "type" : "text",
-          "analyzer": "korean",
-          "fields": {
-              "raw": {
-                "type":  "keyword"
-              }
-            }
-        },
-        "manufacturer" : {
-            "type" : "text",
-            "analyzer": "korean",
-            "fields": {
-              "raw": {
-                "type":  "keyword"
-              }
-            },
-            "boost": 5
-        },
-        "image" : {
-          "type" : "keyword"
-        },
-        "content" : {
-          "type" : "text",
-          "analyzer": "korean",
-          "fields": {
-            "raw": {
-              "type":  "keyword"
-            }
-          }
-        },
-        "reg_date" : {
-          "type" : "date"
-        }
-      }
-    }
-  }
-}
-
-
-PUT _template/product_template
-{
     "template" : "product*",
     "settings" : {
         "index":{
@@ -299,6 +215,7 @@ PUT _template/product_template
         }
       }
 }
+
 
 
 5. 색인
