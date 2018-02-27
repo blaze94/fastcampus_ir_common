@@ -27,6 +27,10 @@ CREATE TABLE `Product` (
 
 4. 매핑 설계
 
+
+/home/ec2-user/elasticsearch-6.1.3/config/analysis/synonym.txt
+/home/ec2-user/elasticsearch-6.1.3/config/analysis/stopword.txt
+
 PUT product
 {
   "settings" : {
