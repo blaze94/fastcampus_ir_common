@@ -1,10 +1,7 @@
 1. 쿼리스트링 쿼리
 일반적인 lucene boolean 파서 문법을 따름
-<pre><code>
-POST store/_search
-</code></pre>
 
-<pre><code>
+POST store/_search
 {
     "query" : {
         "query_string" : {
@@ -12,7 +9,6 @@ POST store/_search
         }
     }
 }
-</code></pre>
 
 추가 가능 옵션
 query
@@ -24,10 +20,7 @@ minimum_should_match
 
 2.TERM  쿼리 ,TERM 필터
 Term쿼리
-<pre><code>
 POST store/_search
-</code></pre>
-<pre><code>
 {
     {
         "query" : {
@@ -36,13 +29,9 @@ POST store/_search
         }
     }
 }
-</code></pre>
 
 Term 필터
-<pre><code>
 POST store/_search
-</code></pre>
-<pre><code>
 {
     "query" : {
         "filtered" : {
@@ -57,13 +46,9 @@ POST store/_search
         }
     }
 }
-</code></pre>
 
 Terms 쿼리 (다중 텀)
-<pre><code>
 POST store/_search
-</code></pre>
-<pre><code>
 {
     "query" : {
         "terms" : {
@@ -72,13 +57,9 @@ POST store/_search
         }
     }
 }
-</code></pre>
 
 3. Match 쿼리
-<pre><code>
 POST store/_search
-</code></pre>
-<pre><code>
 {
     "query" : {
         "match" : {
@@ -89,13 +70,9 @@ POST store/_search
         }
     }
 }
-</code></pre>
 
 4.Phrase 쿼리
-<pre><code>
 POST store/_search
-</code></pre>
-<pre><code>
 {
     "query" : {
         "match" : {
@@ -107,13 +84,9 @@ POST store/_search
         }
     }
 }
-</code></pre>
 
 5. Multi Match 쿼리
-<pre><code>
 POST store/_search
-</code></pre>
-<pre><code>
 {
     "query" : {
         "multi_match" : {
@@ -122,14 +95,10 @@ POST store/_search
         }
     }
 }
-</code></pre>
 
 6. RANGE 쿼리,RANGE 필터
 Range 쿼리
-<pre><code>
 POST store/_search
-</code></pre>
-<pre><code>
 {
     "query" : {
         "range" : {
@@ -140,13 +109,9 @@ POST store/_search
         }
     }
 }
-</code></pre>
 
 Range 필터
-<pre><code>
 POST store/_search
-</code></pre>
-<pre><code>
 {
     "query" : {
         "filtered" : {
@@ -164,16 +129,12 @@ POST store/_search
         }
     }
 }
-</code></pre>
 
 7. NESTED 쿼리(중첩쿼리)
 
 1) 중첩 매핑 설정
 
-<pre><code>
 PUT nested_index/
-</code></pre>
-<pre><code>
 {
   "mappings": {
     "nested_type": {
@@ -185,13 +146,9 @@ PUT nested_index/
     }
   }
 }
-</code></pre>
 
 2) 데이터 입력
-<pre><code>
 PUT nested_index/nested_type/1
-</code></pre>
-<pre><code>
 {
   "group" : "fans",
   "user" : [
@@ -205,13 +162,9 @@ PUT nested_index/nested_type/1
     }
   ]
 }
-</code></pre>
 
 3) 중첩 쿼리
-<pre><code>
 POST nested_index/_search
-</code></pre>
-<pre><code>
 {
   "query": {
     "nested": {
@@ -227,17 +180,13 @@ POST nested_index/_search
     }
   }
 }
-</code></pre>
 
 
 8. Parent-Child 릴레이션 쿼리
 1) 데이터 매핑
 ** 부모는 매핑 정의가 되어 있지 않아야 함
 
-<pre><code>
 PUT my_index
-</code></pre>
-<pre><code>
 {
   "mappings": {
     "my_parent": {},
@@ -248,44 +197,28 @@ PUT my_index
     }
   }
 }
-</code></pre>
 
 2) 데이터 입력
 
-<pre><code>
 PUT my_index/my_parent/1
-</code></pre>
-<pre><code>
 {
   "text": "This is a parent document"
 }
-</code></pre>
 
-<pre><code>
 PUT my_index/my_child/2?parent=1
-</code></pre>
-<pre><code>
 {
   "text": "This is a child document"
 }
-</code></pre>
 
-<pre><code>
 PUT my_index/my_child/3?parent=1&refresh=true
-</code></pre>
-<pre><code>
 {
   "text": "This is another child document"
 }
-</code></pre>
 
 
 3) Has_Child 쿼리
 
-<pre><code>
 POST my_index/my_parent/_search
-</code></pre>
-<pre><code>
 {
   "query": {
     "has_child": {
@@ -298,5 +231,4 @@ POST my_index/my_parent/_search
     }
   }
 }
-</code></pre>
 
