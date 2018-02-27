@@ -896,3 +896,129 @@ PUT span_test
     }
   }
 }
+
+10. 자동완성 질의 예제
+
+
+매핑
+PUT autocomplete
+{
+  "settings": {
+    "index": {
+      "analysis": {
+        "analyzer": {
+          "my-index-edge-jaso": {
+            "type": "custom",
+            "tokenizer": "keyword",
+            "filter": [
+              "my-jaso-filter",
+              "edge_filter"
+            ]
+          },
+          "my-index-full-jaso": {
+            "type": "custom",
+            "tokenizer": "keyword",
+            "filter": [
+              "edge_reverse_filter",
+              "my-jaso-filter",
+              "edge_filter"
+            ]
+          },
+          "my-search-jaso": {
+            "type": "custom",
+            "tokenizer": "keyword",
+            "filter": [
+              "my-jaso-filter"
+            ]
+          }
+        },
+        "filter": {
+          "my-jaso-filter": {
+            "type": "qj-analyzer-filter",
+            "tokenizer": "keyword",
+            "mode": "simple_jaso",
+            "jaso_typo": true
+          },
+          "edge_filter": {
+            "type": "edge_ngram",
+            "min_gram": 1,
+            "max_gram": 10,
+            "token_chars": [
+              "letter",
+              "digit"
+            ]
+          },
+          "edge_reverse_filter": {
+            "type": "edge_ngram",
+            "min_gram": 1,
+            "max_gram": 10,
+            "side": "back",
+            "token_chars": [
+              "letter",
+              "digit"
+            ]
+          }
+        }
+      }
+    }
+  },
+  "mappings": {
+    "item": {
+      "properties": {
+        "auto_keyword": {
+          "type": "keyword",
+          "fields": {
+            "raw": {
+              "type": "keyword"
+            },
+            "spell_edge": {
+              "type": "text",
+              "analyzer": "my-index-edge-jaso",
+              "search_analyzer": "my-search-jaso"
+            },
+            "spell_full": {
+              "type": "text",
+              "analyzer": "my-index-full-jaso",
+              "search_analyzer": "my-search-jaso"
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+데이터 입력
+PUT autocomplete/item/1
+{
+  "auto_keyword": "엘지전자"
+}
+PUT autocomplete/item/2
+{
+  "auto_keyword": "전자금융"
+}
+
+데이터 검색
+{
+  "explain": true,
+  "query": {
+    "query_string": {
+      "fields": [
+        "auto_keyword.spell_edge^10"
+      ],
+      "query": "엘"
+    }
+  }
+}
+
+{
+  "explain": false,
+  "query": {
+    "query_string": {
+      "fields": [
+        "auto_keyword.spell_edge^10","auto_keyword.spell_full^40"
+      ],
+      "query": "전자"
+    }
+  }
+}
