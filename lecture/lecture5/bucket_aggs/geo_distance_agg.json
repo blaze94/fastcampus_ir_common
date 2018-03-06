@@ -1,0 +1,52 @@
+1. store 색인
+
+아래와 같이 매핑
+
+PUT store
+{
+  "mappings": {
+    "info": {
+      "properties": {
+        "location": {
+         "type": "geo_point"
+        }
+      }
+    }
+  }
+}
+
+로그스태쉬 색인 (store.conf 참조)
+
+{
+  "size" : 0,
+    "aggs" : {
+      "rings_around_amsterdam" : {
+        "geo_distance" : {
+          "field" : "location",
+          "origin" : "35.16154901783304, 129.163422950361",
+          "ranges" : [
+            { "to" : 10 },
+            { "from" : 100, "to" : 300 },
+            { "from" : 300 }
+          ]
+      }
+    }
+  }
+}
+
+{
+  "aggs" : {
+    "rings_around_amsterdam" : {
+      "geo_distance" : {
+        "field" : "location",
+        "origin" : "35.16154901783304, 129.163422950361",
+        "ranges" : [
+          { "to" : 100000, "key": "first_ring" },
+          { "from" : 100000, "to" : 300000, "key": "second_ring" },
+          { "from" : 300000, "key": "third_ring" }
+        ],
+        "keyed": true
+      }
+    }
+  }
+}

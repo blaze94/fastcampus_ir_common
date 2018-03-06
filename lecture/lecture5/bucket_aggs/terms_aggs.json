@@ -1,0 +1,12 @@
+{
+	"size" : 0,
+	"aggs" : {
+		"manufacturer_agg" : {
+			"terms" : {
+				"field" : "manufacturer.raw",
+				"shard_size": 200
+			}
+		}
+	}
+
+}

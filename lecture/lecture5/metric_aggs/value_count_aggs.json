@@ -1,0 +1,10 @@
+POST store/_search
+{
+  "query" : {
+    "match" : { "region" : "서울특별시" }
+  },
+  "size" : 0,
+  "aggs" : {
+    "types_count" : { "value_count" : { "field" : "region.keyword" } }
+  }
+}

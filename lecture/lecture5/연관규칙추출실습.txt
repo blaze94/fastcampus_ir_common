@@ -1,0 +1,62 @@
+1. 데이터 매핑
+-PUT recs  (인덱스 처음 생성시)
+{
+  "mappings": {
+    "user": {
+      "properties": {
+        "movies_liked": {
+          "type" : "keyword"
+        }
+      }
+    }
+  }
+}
+2. 데이터 입력
+PUT recs/user/1
+{    "movies_liked": ["Forrest Gump", "Terminator", "Rambo", "Rocky", "Good Will Hunting"]}
+
+PUT recs/user/2
+{    "movies_liked": ["Forrest Gump", "Terminator", "Rocky IV", "Rocky", "Rocky II", "Predator"]}
+
+PUT recs/user/3
+{    "movies_liked": ["Forrest Gump", "The Thin Red Line", "Good Will Hunting", "Rocky II", "Predator", "Batman"]}
+
+PUT recs/user/4
+{    "movies_liked": ["Forrest Gump", "Something about Mary", "Sixteen Candles"]}
+
+
+3. 연관데이터 조회
+POST recs/user/_search
+{
+    "query": {
+        "match": {
+            "movies_liked": "Terminator"
+        }
+    },
+    "aggregations": {
+        "movies_like_terminator": {
+            "terms": {
+                "field": "movies_liked",
+                "min_doc_count": 1
+            }
+        }
+    }
+}
+
+
+POST recs/user/_search
+{
+    "query": {
+        "match": {
+            "movies_liked": "Terminator"
+        }
+    },
+    "aggregations": {
+        "movies_like_terminator": {
+            "significant_terms": {
+                "field": "movies_liked",
+                "min_doc_count": 1
+            }
+        }
+    }
+}

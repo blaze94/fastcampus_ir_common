@@ -1,0 +1,24 @@
+POST store/_search
+{
+  "query" : {
+    "match" : { "region" : "서울특별시" }
+  },
+  "aggs" : {
+    "viewport" : {
+      "geo_bounds" : {
+        "field" : "location",
+        "wrap_longitude" : true
+      }
+    }
+  }
+}
+
+{
+  "aggs" : {
+    "centroid" : {
+      "geo_centroid" : {
+        "field" : "location"
+      }
+    }
+  }
+}
