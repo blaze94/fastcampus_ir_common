@@ -1,0 +1,195 @@
+##################
+# 기본 설정
+##################
+
+# 클러스터 이름 설정
+cluster.name: my-application
+# 노드 이름 설정
+node.name: node-1
+# 서버의 렉 위치 설정
+node.attr.rack: r1
+
+# 별도의 데이터 저장소 설정 (기본값 $home/data)
+path.data: /path/to/data
+
+# 별도의 로그  저장소 설정 (기본값 $home/logs)
+path.logs: /path/to/logs
+
+#JVM 메모리 swapping lock 여부. true로 설정 추천
+bootstrap.memory_lock: true
+
+##################
+# 노드 속성 설정
+##################
+
+#마스터 후보 노드
+node.master: true
+
+#데이터 노드
+node.data: false
+
+#ingest 노드
+node.ingest: false
+
+#클러스터와 클러스터 사이의 크로스 검색 허용 여부
+search.remote.connect: false
+
+##################
+# 네트워크 설정
+##################
+
+
+#노드의 호스트명 설정
+#기본값 _local_
+# _site_  내부아이피 설정
+# _global_ 외부아이피 설정
+network.host: 0.0.0.0
+
+#노드의 포트 설정
+http.port: 9200
+
+#노드의 tcp 포트 설정
+transport.tcp.port: 9300
+
+#유니캐스트 호스트 설정
+discovery.zen.ping.unicast.hosts : ["127.0.0.1", "[::1]"]
+
+#두개 이상의 네트워크 카드가 있을 경우 바인딩 설정
+#network.bind_host
+
+#여러 주소가 바인딩되었을 경우 대표하는 하나의 호스트를 명시적으로 설정
+#network.publish_host
+
+
+
+##################
+# http 설정
+##################
+
+#최대로 허용하는 헤더 사이즈
+#http.max_header_size
+
+#http 압축 레벨 설정 (기본값 3 작을수록 압축률 낮음)
+http.compression_level: 3
+
+#cross-origin 자원 공유를 허용할지 여부 (기본값 false)
+#CORS : 처음 전송되는 리소스의 도메인과 다른 도메인으로부터 리소스가 요청될 경우
+http.cors.enabled: false
+
+#CORS를 허용하는 출처를 명시
+#http.cors.allow-origin
+
+#허용하는 method를 명시 기본값 OPTIONS, HEAD, GET, POST, PUT, DELETE
+#http.cors.allow-methods:
+
+#허용하는 헤더를 명시  기본값 X-Requested-With, Content-Type, Content-Length.
+#http.cors.allow-headers
+
+#노드가 외부와  http 교신을 허용할지 여부 (기본값 true)
+#데이터 전용 노드의 경우 false 권장
+http.enabled: true
+
+
+##################
+# Shard Allocation 설정
+##################
+
+
+##################
+# Shard Rebalancing 설정
+##################
+
+##################
+# Shard Balancing Heuristicsedit 설정
+##################
+
+##################
+#Disk-based Shard Allocation 설정
+##################
+#cluster.routing.allocation.disk.threshold_enabled
+#cluster.routing.allocation.disk.watermark.low
+#cluster.routing.allocation.disk.watermark.high
+#cluster.routing.allocation.disk.watermark.flood_stage
+#cluster.info.update.interval
+#cluster.routing.allocation.disk.include_relocations
+
+
+##################
+#Zen Discovery
+##################
+
+##################
+#Master 선출 설정
+##################
+discovery.zen.ping_timeout: 3s
+discovery.zen.join_timeout: 20
+ping_interval: 1s
+ping_timeout: 30s
+ping_retries: 3
+
+discovery.zen.minimum_master_nodes: 2
+
+##################
+#Local Gateway 설정
+##################
+#gateway.expected_nodes
+#gateway.expected_master_nodes
+#gateway.expected_data_nodes
+#gateway.recover_after_time
+#gateway.recover_after_nodes
+#gateway.recover_after_master_nodes
+#gateway.recover_after_data_nodes
+
+##################
+#Circuit Breaker 설정
+##################
+#indices.breaker.total.limit
+#indices.breaker.fielddata.limit
+#indices.breaker.fielddata.overhead
+#indices.breaker.request.limit
+#indices.breaker.request.overhead
+
+##################
+#Fielddata
+##################
+
+#fielddata 캐쉬 사이즈 조정
+# 30%  or 명시적 용량 적용 가능 12gb
+#indices.fielddata.cache.size:
+
+##################
+#Node Query Cache 설정
+##################
+#indices.queries.cache.size
+#index.queries.cache.enabled
+
+##################
+#Indexing Buffer
+##################
+#indices.memory.index_buffer_size
+#indices.memory.min_index_buffer_size
+#indices.memory.max_index_buffer_size
+
+##################
+#Shard request cache
+##################
+indices.requests.cache.size: 2%
+
+##################
+#색인 복구 설정
+##################
+indices.recovery.max_bytes_per_sec: 40mb
+
+##################
+#Search Slow Log 설정
+##################
+
+index.search.slowlog.threshold.query.warn: 10s
+index.search.slowlog.threshold.query.info: 5s
+index.search.slowlog.threshold.query.debug: 2s
+index.search.slowlog.threshold.query.trace: 500ms
+
+index.search.slowlog.threshold.fetch.warn: 1s
+index.search.slowlog.threshold.fetch.info: 800ms
+index.search.slowlog.threshold.fetch.debug: 500ms
+index.search.slowlog.threshold.fetch.trace: 200ms
