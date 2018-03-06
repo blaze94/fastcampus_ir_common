@@ -1,0 +1,12 @@
+PUT store
+{
+  "mappings": {
+    "info": {
+      "properties": {
+        "location": {
+          "type": "geo_point"
+        }
+      }
+    }
+  }
+}
