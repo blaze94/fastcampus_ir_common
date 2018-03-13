@@ -142,9 +142,9 @@ wget https://github.com/blaze94/fastcampus_ir_common/raw/master/lecture/lecture6
 
 1) 매핑
 -XPUT seoul-metro-2016
-  {
+{
     "mappings" : {
-      "seoul-metro" : {
+      "doc" : {
         "properties" : {
           "line_num" : {
             "type" : "integer"
@@ -185,7 +185,7 @@ wget https://github.com/blaze94/fastcampus_ir_common/raw/master/lecture/lecture6
         }
       }
     }
-  }
+}
 
 
 
@@ -193,7 +193,7 @@ wget https://github.com/blaze94/fastcampus_ir_common/raw/master/lecture/lecture6
 input {
   file {
     codec => json
-    path => "/home/ec2-user/metro_data/*.log"
+    path => "/home/ec2-user/data/*.log"
     start_position => "beginning"
   }
 }
@@ -205,6 +205,7 @@ filter{
 }
 
 output{
+  stdout {}
   elasticsearch{
     hosts => ["127.0.0.1:9200"]
     index => "seoul-metro-2016"
@@ -226,17 +227,6 @@ vi config/kibana.yml
 server.host: "0.0.0.0"
 
 bin/kibana
-
-
-
-
-
-
- 6. 타임라이언 예제
- .es,es(metric=cardinality:user)
- .es(timefield="time_slot",index="seoul-metro-2016",metric=sum:people_in,q=station_name:상왕십리).label("상왕십리역"),.es(timefield="time_slot",index="seoul-metro-2016",metric=sum:people_in,q=station_name:왕십리).label("왕십리")
-
-
 
 
 

@@ -1,0 +1,16 @@
+.es,es(metric=cardinality:station_name)
+
+ 특정 기간동안 승차인원 총합
+
+.es(index=seoul-*, timefield='time_slot', metric='sum:people_in'),.es(index=seoul-*, timefield='time_slot', metric='sum:people_out')
+.es(timefield="time_slot",index="seoul-metro-2016",metric=sum:people_in,q=station_name:상왕십리).label("상왕십리역"),.es(timefield="time_slot",index="seoul-metro-2016",metric=sum:people_in,q=station_name:왕십리).label("왕십리")
+.es(timefield="time_slot",index="seoul-metro-2016",split=station_name:10, metric=sum:people_in)
+
+ 라인 스타일 지정
+.es(timefield="time_slot",index="seoul-metro-2016",split=station_name:5, metric=sum:people_in),.es().bars(), .static(10000).points(symbol=cross, radius=2), .static(10000).lines(width=5)
+
+.yaxis(2) 단위를 다르게
+.lines(steps=2,fill=2,width=10)
+
+조건 걸기
+.if(gt,100,.es(index=seoul-*, timefield='time_slot', metric='sum:people_in'),null).color('red')
