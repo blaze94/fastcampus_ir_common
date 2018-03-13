@@ -1,0 +1,392 @@
+1. 설치
+
+로그스태쉬 : https://artifacts.elastic.co/downloads/logstash/logstash-6.1.3.tar.gz
+파일비트  : https://artifacts.elastic.co/downloads/beats/filebeat/filebeat-6.1.3-linux-x86_64.tar.gz
+메트릭비트 : https://artifacts.elastic.co/downloads/beats/metricbeat/metricbeat-6.1.3-linux-x86_64.tar.gz
+키바나 : https://artifacts.elastic.co/downloads/kibana/kibana-6.1.3-linux-x86_64.tar.gz
+엘라스틱서치 : https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-6.1.3.tar.gz
+
+
+
+2. 메트릭비트 실습
+메트릭 비트 설치
+https://artifacts.elastic.co/downloads/beats/metricbeat/metricbeat-6.1.3-linux-x86_64.tar.gz
+tar zxvf metricbeat-6.1.3-linux-x86_64.tar.gz
+cd metricbeat-6.1.3
+
+실행
+sudo ./metricbeat -e -c metricbeat.yml
+
+키바나 대쉬보드 로드하기
+./scripts/import_dashboards
+
+
+
+
+3. nginx 분석
+sudo yum install nginx
+sudo service nginx start
+sudo chown -R ec2-user.ec2-user /var/log/nginx /usr/share/nginx/html
+echo "<h1>Hello World</h1>" > /usr/share/nginx/html/hello.html
+
+
+로그스태쉬만 사용하기
+vi nginx.conf
+input {
+        file {
+                path => "/var/log/nginx/access.log"
+                start_position => beginning
+        }
+}
+
+filter {
+        grok {
+                match => { "message" => "%{COMBINEDAPACHELOG}" }
+        }
+        geoip {
+                source => "clientip"
+        }
+}
+output {
+  elasticsearch{
+    hosts => ["127.0.0.1:9200"]
+    index => "nginx_log"
+    document_type => "log"
+  }
+  stdout {}
+}
+
+
+- 파일비트랑 함께 사용하기
+wget https://artifacts.elastic.co/downloads/beats/filebeat/filebeat-6.1.3-linux-x86_64.tar.gz
+tar zxvf filebeat-6.1.3-linux-x86_64.tar.gz
+cd filebeat-6.1.3-linux-x86_64
+sudo ./filebeat -e -c filebeat.yml  (데몬 실행)
+
+vi filebeat.yml
+
+  # Paths that should be crawled and fetched. Glob based paths.
+  paths:
+    - /var/log/nginx/access.log
+  document_type: access
+    #- c:\programdata\elasticsearch\logs\*
+- input_type: log
+  paths:
+    - /var/log/nginx/error.log
+  document_type: error
+
+
+  이하 생략
+
+  output.logstash:
+    # The Logstash hosts
+    hosts: ["localhost:5044"]
+
+  이하 생략
+
+
+vi nginx_with_beat.conf
+input {
+    beats {
+        port => "5044"
+    }
+}
+filter {
+        if [type] == "access" {
+            mutate {
+               add_field => { "log_type" => "access" }
+            }
+        } else if [type] == "error" {
+            mutate {
+               add_field => { "log_type" => "error" }
+            }
+        }
+        grok {
+                match => { "message" => "%{COMBINEDAPACHELOG}" }
+        }
+        geoip {
+                source => "clientip"
+        }
+}
+output {
+  elasticsearch{
+    hosts => ["127.0.0.1:9200"]
+    index => "nginx_log_beat"
+    document_type => "log"
+  }
+  stdout {}
+}
+
+날짜별 저장
+index => "%{[@metadata][beat]}-%{+YYYY.MM.dd}"
+document_type => "%{[@metadata][type]}"
+
+
+4.2016서울시 지하철 정보 분석
+https://www.elastic.co/kr/blog/seoul-metro-2014
+
+1) 매핑
+-XPUT seoul-metro-2016
+  {
+    "mappings" : {
+      "seoul-metro" : {
+        "properties" : {
+          "line_num" : {
+            "type" : "integer"
+          },
+          "line_num_en" : {
+            "type" : "keyword"
+          },
+          "people_in" : {
+            "type" : "integer"
+          },
+          "people_out" : {
+            "type" : "integer"
+          },
+          "station_geo" : {
+            "type" : "geo_point"
+          },
+          "station_name" : {
+            "type" : "keyword"
+          },
+          "station_name_ch" : {
+            "type" : "keyword"
+          },
+          "station_name_chc" : {
+            "type" : "keyword"
+          },
+          "station_name_en" : {
+            "type" : "keyword"
+          },
+          "station_name_jp" : {
+            "type" : "keyword"
+          },
+          "station_name_kr" : {
+            "type" : "keyword"
+          },
+          "time_slot" : {
+            "type" : "date"
+          }
+        }
+      }
+    }
+  }
+
+
+
+2) metro.conf 생성
+input {
+  file {
+    codec => json
+    path => "/home/ec2-user/metro_data/*.log"
+    start_position => "beginning"
+  }
+}
+
+filter{
+  mutate {
+    remove_field => [ "@version", "@timestamp", "host", "path" ]
+  }
+}
+
+output{
+  elasticsearch{
+    hosts => ["127.0.0.1:9200"]
+    index => "seoul-metro-2016"
+    document_type => "seoul-metro"
+  }
+}
+
+
+
+
+
+- 키바나 설치
+
+wget https://artifacts.elastic.co/downloads/kibana/kibana-6.1.3-linux-x86_64.tar.gz
+tar xvf kibana-6.1.3-linux-x86_64.tar.gz
+cd kibana-6.1.3-linux-x86_64
+
+vi config/kibana.yml
+server.host: "0.0.0.0"
+
+bin/kibana
+
+
+
+
+
+5. logstash-aggregation-filter 사용
+
+bin/logstash-plugin install logstash-filter-aggregate
+설치(자바 7로 설치)
+
+
+로그스태쉬 설정
+
+1) START와 END가 있는경우
+input { stdin { } }
+
+filter {
+   grok {
+     match => [ "message", "%{LOGLEVEL:loglevel} - %{NOTSPACE:taskid} - %{NOTSPACE:logger} - %{WORD:label}( - %{INT:duration:int})?" ]
+   }
+
+   if [logger] == "TASK_START" {
+     aggregate {
+       task_id => "%{taskid}"
+       code => "map['sql_duration'] = 0"
+       map_action => "create"
+     }
+   }
+
+   if [logger] == "SQL" {
+     aggregate {
+       task_id => "%{taskid}"
+       code => "map['sql_duration'] += event.get('duration')"
+       map_action => "update"
+     }
+   }
+
+   if [logger] == "TASK_END" {
+     aggregate {
+       task_id => "%{taskid}"
+       code => "event.set('sql_duration', map['sql_duration'])"
+       map_action => "update"
+       end_of_task => true
+       timeout => 120
+     }
+   }
+ }
+ output {
+   stdout {
+         codec => rubydebug
+     }
+   elasticsearch {
+     hosts => ["127.0.0.1:9200"]
+           index => "test"
+   }
+ }
+데이터 입력
+ INFO - 12345 - TASK_START - start
+ INFO - 12345 - SQL - sqlQuery1 - 12
+ INFO - 12345 - SQL - sqlQuery2 - 34
+ INFO - 12345 - TASK_END - end
+
+2) START가 없는 경우
+input { stdin { } }
+
+
+filter {
+   grok {
+     match => [ "message", "%{LOGLEVEL:loglevel} - %{NOTSPACE:taskid} - %{NOTSPACE:logger} - %{WORD:label}( - %{INT:duration:int})?" ]
+   }
+
+   if [logger] == "SQL" {
+     aggregate {
+       task_id => "%{taskid}"
+       code => "map['sql_duration'] ||= 0 ; map['sql_duration'] += event.get('duration')"
+     }
+   }
+
+   if [logger] == "TASK_END" {
+     aggregate {
+       task_id => "%{taskid}"
+       code => "event.set('sql_duration', map['sql_duration'])"
+       end_of_task => true
+       timeout => 120
+     }
+   }
+ }
+
+output {
+  stdout {
+        codec => rubydebug
+    }
+  elasticsearch {
+    hosts => ["127.0.0.1:9200"]
+          index => "test"
+  }
+}
+
+데이터 입력
+ INFO - 12345 - SQL - sqlQuery1 - 12
+ INFO - 12345 - SQL - sqlQuery2 - 34
+ INFO - 12345 - TASK_END - end
+
+
+3)END Event가 없는경우
+input { stdin { } }
+
+filter {
+  grok {
+     match => [ "message", "%{LOGLEVEL:loglevel} - %{NOTSPACE:taskid} - %{NOTSPACE:logger} - %{WORD:label}( - %{INT:duration:int})?" ]
+  }
+
+  aggregate {
+    task_id => "%{taskid}"
+    code => "map['sql_duration'] ||= 0 ; map['sql_duration'] += event.get('duration')"
+    push_map_as_event_on_timeout => true
+    timeout_task_id_field => "taskid"
+    timeout => 10 # 10 minutes timeout 초단위
+    timeout_tags => ['_aggregatetimeout']
+    timeout_code => "event.set('sql_duration', event.get('sql_duration')+10);event.set('lable','test');"
+  }
+}
+
+
+output {
+  stdout {
+        codec => rubydebug
+    }
+  elasticsearch {
+    hosts => ["127.0.0.1:9200"]
+          index => "test"
+  }
+}
+
+데이터 입력
+ INFO - 12345 - TASK_START - start
+ INFO - 12345 - SQL - sqlQuery1 - 12
+ INFO - 12345 - SQL - sqlQuery2 - 34
+ INFO - 12345 - TASK_END - end
+
+
+
+
+ 6. 타임라이언 예제
+ .es,es(metric=cardinality:user)
+ .es(timefield="time_slot",index="seoul-metro-2016",metric=sum:people_in,q=station_name:상왕십리).label("상왕십리역"),.es(timefield="time_slot",index="seoul-metro-2016",metric=sum:people_in,q=station_name:왕십리).label("왕십리")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
