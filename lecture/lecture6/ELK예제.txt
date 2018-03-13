@@ -138,7 +138,8 @@ https://www.elastic.co/kr/blog/seoul-metro-2014
 
 
 데이터 다운로드
-2016_metro.tgz
+wget https://github.com/blaze94/fastcampus_ir_common/raw/master/lecture/lecture6/2016_metro.tgz
+
 1) 매핑
 -XPUT seoul-metro-2016
   {
