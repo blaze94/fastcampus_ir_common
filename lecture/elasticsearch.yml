@@ -9,7 +9,7 @@ node.name: node-1
 # 서버의 렉 위치 설정
 node.attr.rack: r1
 
-# 별도의 데이터 저장소 설정 (기본값 $home/data)
+# 별도의 데이터 저장소 설정 (기본값 $es_home/data)
 # 기본 설정오에도 여러 저장소에 걸쳐서 색인을 저장시킬수 있음
 # stripe 한다고 표현하는데 아래와 같이 사용
 #path.data: /mnt/path_1,/mnt/path_2,/mnt/path_3
@@ -88,9 +88,8 @@ action.auto_create_index: true
 index.mapper.dynamic: true
 
 #>> curl -XDELETE 'http://localhost:9200/_all/'
-#상기와 같이 실수로 모든 색인을 삭제하는 것을 막는다
-action.disable_delete_all_indices: true
-
+#상기와 같이 실수로 모든 색인을 삭제하는 것을 막는다(true 설정)
+action.destructive_requires_name: false
 
 ##################
 # http 설정
