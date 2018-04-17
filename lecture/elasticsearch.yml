@@ -175,19 +175,6 @@ cluster.routing.allocation.disk.watermark.low: 85%
 cluster.routing.allocation.disk.watermark.high: 90%
 
 
-
-
-
-# 인덱스 당 동시에 디스크에 access할 수 있는 thread의 수이다.
-# `기본값은 Math.min(3, Runtime.getRuntime().availableProcessors() / 2)`이다.
-# 기본값은 SSD로 구성된 시스템에 권장되고, 일반하드를 사용할 경우에는 concurrent I/O에 취약하므로 값을 1로 줄여주는 것이 좋음
-index.merge.scheduler.max_thread_count: 1
-
-# translog에 설정값 이상이 쌓이면 flush된다.
-# `기본값은 200MB`인데, 덜 자주 flush되도록 값을 늘려주면 인덱싱 성능에 도움이 됨
-index.translog.flush_threshold_size: 200mb
-
-
 #노드가 디스크 공간을 모두 소모하지 않게하는 최후의 수단
 #노드가 디스크가 임계점을 넘었을때 하나 이상의 샤드가 할당된 모든 인덱스를 읽기전용으로 만듬.
 #마찬가지로 백분위와 절대값을 동시에 사용 가능
@@ -198,6 +185,22 @@ cluster.info.update.interval: 30s
 
 #노드의 디스크 사용량을 계산할때 현재 재배치되고 있는 샤드도 함께 고려함
 cluster.routing.allocation.disk.include_relocations: true
+
+
+##################
+#Merge Schedule 설정
+##################
+# 인덱스 당 동시에 디스크에 access할 수 있는 thread의 수이다.
+# `기본값은 Math.min(3, Runtime.getRuntime().availableProcessors() / 2)`이다.
+# 기본값은 SSD로 구성된 시스템에 권장되고, 일반하드를 사용할 경우에는 concurrent I/O에 취약하므로 값을 1로 줄여주는 것이 좋음
+index.merge.scheduler.max_thread_count: 1
+
+# translog에 설정값 이상이 쌓이면 flush된다.
+# `기본값은 200MB`인데, 덜 자주 flush되도록 값을 늘려주면 인덱싱 성능에 도움이 됨
+index.translog.flush_threshold_size: 200mb
+
+
+
 
 
 
