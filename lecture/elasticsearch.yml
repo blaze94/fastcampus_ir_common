@@ -384,21 +384,50 @@ indices.recovery.max_bytes_per_sec: 40mb
 # fetch 단계란? 가져올 문서를 식별하고 관련 샤드에 다중 GET 요청을 보내  _source 및 하일라이팅 등 문서 원본을 가져와
 #             결과를 리턴할 준비를 마친 상태
 
-index.search.slowlog.threshold.query.warn: 10s
-index.search.slowlog.threshold.query.info: 5s
-index.search.slowlog.threshold.query.debug: 2s
-index.search.slowlog.threshold.query.trace: 500ms
 
-index.search.slowlog.threshold.fetch.warn: 1s
-index.search.slowlog.threshold.fetch.info: 800ms
-index.search.slowlog.threshold.fetch.debug: 500ms
-index.search.slowlog.threshold.fetch.trace: 200ms
 
-index.search.slowlog.level: info
+#index.search.slowlog.threshold.query.warn: 10s
+#index.search.slowlog.threshold.query.info: 5s
+#index.search.slowlog.threshold.query.debug: 2s
+#index.search.slowlog.threshold.query.trace: 500ms
 
-index.indexing.slowlog.threshold.index.warn: 10s
-index.indexing.slowlog.threshold.index.info: 5s
-index.indexing.slowlog.threshold.index.debug: 2s
-index.indexing.slowlog.threshold.index.trace: 500ms
-index.indexing.slowlog.level: info
-index.indexing.slowlog.source: 1000
+#index.search.slowlog.threshold.fetch.warn: 1s
+#index.search.slowlog.threshold.fetch.info: 800ms
+#index.search.slowlog.threshold.fetch.debug: 500ms
+#index.search.slowlog.threshold.fetch.trace: 200ms
+
+#index.search.slowlog.level: info
+
+#index.indexing.slowlog.threshold.index.warn: 10s
+#index.indexing.slowlog.threshold.index.info: 5s
+#index.indexing.slowlog.threshold.index.debug: 2s
+#index.indexing.slowlog.threshold.index.trace: 500ms
+#index.indexing.slowlog.level: info
+#index.indexing.slowlog.source: 1000
+
+#하기 모든 설정은 5.0 이후 index setting으로 변경되었으므로 아래와 같이 설정함.
+curl -XPUT 'http://localhost:9200/_all/_settings?preserve_existing=true' -d '{
+  "index.indexing.slowlog.level" : "info",
+  "index.indexing.slowlog.source" : "1000",
+  "index.indexing.slowlog.threshold.index.debug" : "2s",
+  "index.indexing.slowlog.threshold.index.info" : "5s",
+  "index.indexing.slowlog.threshold.index.trace" : "500ms",
+  "index.indexing.slowlog.threshold.index.warn" : "10s",
+  "index.merge.scheduler.max_thread_count" : "1",
+  "index.queries.cache.enabled" : "true",
+  "index.search.slowlog.level" : "info",
+  "index.search.slowlog.threshold.fetch.debug" : "500ms",
+  "index.search.slowlog.threshold.fetch.info" : "800ms",
+  "index.search.slowlog.threshold.fetch.trace" : "200ms",
+  "index.search.slowlog.threshold.fetch.warn" : "1s",
+  "index.search.slowlog.threshold.query.debug" : "2s",
+  "index.search.slowlog.threshold.query.info" : "5s",
+  "index.search.slowlog.threshold.query.trace" : "500ms",
+  "index.search.slowlog.threshold.query.warn" : "10s",
+  "index.translog.durability" : "request",
+  "index.translog.flush_threshold_size" : "512mb",
+  "index.translog.retention.age" : "12h",
+  "index.translog.retention.size" : "512mb",
+  "index.translog.sync_interval" : "5s",
+  "index.unassigned.node_left.delayed_timeout" : "5m"
+}'
