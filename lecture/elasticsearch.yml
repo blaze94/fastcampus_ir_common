@@ -120,14 +120,6 @@ http.cors.enabled: false
 http.enabled: true
 
 
-##################
-# Shard Rebalancing 설정
-##################
-
-##################
-# Shard Balancing Heuristicsedit 설정
-##################
-
 
 ##################
 # Shard Allocation 설정
@@ -182,28 +174,9 @@ cluster.routing.allocation.disk.watermark.low: 85%
 # `기본값은 90%`마찬가지로 절대값으로 정할 경우는 남은 용량 기준
 cluster.routing.allocation.disk.watermark.high: 90%
 
-# 클러스터의 shard balancing 관련 옵션
-# 이 값이 커지면 "모든 노드"에 샤드의 개수를 균등하게 분배하려는 경향이 강해진다는 것을 의미
-# `기본값은 0.45`
-cluster.routing.allocation.balance.shard: 0.45
 
 
-#  값이 커지면 "각 인덱스"에서 샤드의 개수를 균등하게 분배하려는 경향이 강해진다는 것을 의미
-#  이 값은 바로 위의 cluster.routing.allocation.balance.shard와 합해서 1.0이 되어야 함
-# `기본값은 0.55`
-cluster.routing.allocation.balance.index: 0.55
 
-# balancing action이 일어나도록 하는 threshold 값이다. 작을수록 balancing이 일어날 확률이 높아짐
-# `기본값은 1.0`이다.
-cluster.routing.allocation.balance.threshold: 1
-
-# shard rebalancing이 동시에 몇 개 까지 허용되는 지를 결정하는 값
-# `기본값은 1` 제한을 없애려면 -1 을 준다.
-cluster.routing.allocation.cluster_concurrent_rebalance: 1
-
-# 초당 설정값을 넘는 용량의 segemnt merge는 일어나지 않도록 throttle 시키는 옵션이다.
-# `기본값은 20mb`인데, 일반 하드 기준이므로 SSD를 사용하고 있다면 100~200mb 정도로 늘려주는 것이 좋음
-indices.store.throttle.max_bytes_per_sec: 20mb
 
 # 인덱스 당 동시에 디스크에 access할 수 있는 thread의 수이다.
 # `기본값은 Math.min(3, Runtime.getRuntime().availableProcessors() / 2)`이다.
@@ -225,6 +198,36 @@ cluster.info.update.interval: 30s
 
 #노드의 디스크 사용량을 계산할때 현재 재배치되고 있는 샤드도 함께 고려함
 cluster.routing.allocation.disk.include_relocations: true
+
+
+
+##################
+# Shard Rebalancing 설정 (동적변경 가능)
+##################
+cluster.routing.rebalance.enable: all
+cluster.routing.allocation.allow_rebalance: indices_all_active
+
+# shard rebalancing이 동시에 몇 개 까지 허용되는 지를 결정하는 값
+# `기본값은 2` 제한을 없애려면 -1 을 준다.
+cluster.routing.allocation.cluster_concurrent_rebalance: 2
+
+##################
+# Shard Balancing Heuristicsedit 설정
+##################
+# 클러스터의 shard balancing 관련 옵션
+# 이 값이 커지면 "모든 노드"에 샤드의 개수를 균등하게 분배하려는 경향이 강해진다는 것을 의미
+# `기본값은 0.45`
+cluster.routing.allocation.balance.shard: 0.45
+
+#  값이 커지면 "각 인덱스"에서 샤드의 개수를 균등하게 분배하려는 경향이 강해진다는 것을 의미
+#  이 값은 바로 위의 cluster.routing.allocation.balance.shard와 합해서 1.0이 되어야 함
+# `기본값은 0.55`
+cluster.routing.allocation.balance.index: 0.55
+
+# balancing action이 일어나도록 하는 threshold 값이다. 작을수록 balancing이 일어날 확률이 높아짐
+# `기본값은 1.0`이다.
+cluster.routing.allocation.balance.threshold: 1
+
 
 
 ##################
