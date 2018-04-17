@@ -65,8 +65,6 @@ transport.tcp.port: 9300
 #유니캐스트 호스트 설정
 discovery.zen.ping.unicast.hosts : ["127.0.0.1", "[::1]"]
 
-# production에서는 multicast를 아예 사용치 않게끔 설정
-discovery.zen.ping.multicast.enabled: false
 
 #두개 이상의 네트워크 카드가 있을 경우 바인딩 설정
 #network.bind_host
@@ -266,10 +264,10 @@ cluster.routing.allocation.balance.threshold: 1
 #위 조건이 성립되면 노드가 클러스터에서 이탈하는데
 #이탈을 하게 되면 나머지 노드가 샤드를 나누어 가지게 되는  shard allocation 발생
 #데이터 양이 많을 경우 CPU 부하가 매우 높아지므로 이를 느슨하게 변경할 필요가 생김(상황에 따라서
-discovery.zen.join_timeout: 20
-discovery.zen.ping_interval: 1s
-discovery.zen.ping_timeout: 30s
-discovery.zen.ping_retries: 3
+
+discovery.zen.fd.ping_interval: 1s
+discovery.zen.fd.ping_timeout: 30s
+discovery.zen.fd.ping_retries: 3
 
 #split brain 현상을 회피하기 위해서 최소 마스터 자질 노드 숫자를 선정
 discovery.zen.minimum_master_nodes: 2
