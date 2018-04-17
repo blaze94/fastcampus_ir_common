@@ -1,0 +1,390 @@
+##################
+# 기본 설정
+##################
+
+# 클러스터 이름 설정
+cluster.name: my-application
+# 노드 이름 설정
+node.name: node-1
+# 서버의 렉 위치 설정
+node.attr.rack: r1
+
+# 별도의 데이터 저장소 설정 (기본값 $home/data)
+# 기본 설정오에도 여러 저장소에 걸쳐서 색인을 저장시킬수 있음
+# stripe 한다고 표현하는데 아래와 같이 사용
+#path.data: /mnt/path_1,/mnt/path_2,/mnt/path_3
+#RAID 0과 비슷하게 작동 됩니다.
+#특정 위치를 지정하거나 용량 선택은 할수 없음.
+#하지만  아래 옵션으로
+#index.store.distributor: (least_used 혹은 random)
+#가용 용량이 많은 쪽이나 혹은 랜덤하게 배치 할수 있습니다.
+path.data: /path/to/data
+
+
+# 별도의 로그  저장소 설정 (기본값 $home/logs)
+path.logs: /path/to/logs
+
+# JVM 메모리 swapping lock 여부. true로 설정 추천
+# 메모리 swap 방지를 위한 매우 중요한 옵션
+bootstrap.memory_lock: true
+
+##################
+# 노드 속성 설정
+##################
+
+#마스터 후보 노드
+node.master: true
+
+#데이터 노드
+node.data: false
+
+#ingest 노드
+node.ingest: false
+
+#클러스터와 클러스터 사이의 크로스 검색 허용 여부
+search.remote.connect: false
+
+##################
+# 네트워크 설정
+##################
+
+
+#노드의 호스트명 설정
+#기본값 _local_
+# _site_  내부아이피 설정
+# _global_ 외부아이피 설정
+network.host: 0.0.0.0
+
+# 노드의 포트 설정
+# 의도치 않게 외부로 노출될 경우 외부 공격자가 E/S를 노리고 9200포트를 스캐닝하여 공격가능하기 때문에 다른 포트로 변경추천
+http.port: 9200
+
+#노드의 tcp 포트 설정
+transport.tcp.port: 9300
+
+#유니캐스트 호스트 설정
+discovery.zen.ping.unicast.hosts : ["127.0.0.1", "[::1]"]
+
+# production에서는 multicast를 아예 사용치 않게끔 설정
+discovery.zen.ping.multicast.enabled: false
+
+#두개 이상의 네트워크 카드가 있을 경우 바인딩 설정
+#network.bind_host
+
+#여러 주소가 바인딩되었을 경우 대표하는 하나의 호스트를 명시적으로 설정
+#network.publish_host
+
+
+##################
+# index 설정  관련
+##################
+
+# 색인이 생성되지 않았을시 첫 문서 색인시 자동으로 생성시키는 설정
+# 무분별하게 의도치 않은 색인이 생성될 가능성이 있으므로 production에서는 끄는 것이 좋다
+action.auto_create_index: true
+
+# 매핑이 생성되지 않았을시 첫 문서의 색인시 자동으로 매핑을 생성서키는 설정
+# 의도된 정확한 매핑을 지정하여 사용하는 것이 좋다
+index.mapper.dynamic: true
+
+#>> curl -XDELETE 'http://localhost:9200/_all/'
+#상기와 같이 실수로 모든 색인을 삭제하는 것을 막는다
+action.disable_delete_all_indices: true
+
+
+##################
+# http 설정
+##################
+
+#최대로 허용하는 헤더 사이즈
+#http.max_header_size
+
+#http 압축 레벨 설정 (기본값 3 작을수록 압축률 낮음)
+http.compression_level: 3
+
+#cross-origin 자원 공유를 허용할지 여부 (기본값 false)
+#CORS : 처음 전송되는 리소스의 도메인과 다른 도메인으로부터 리소스가 요청될 경우
+http.cors.enabled: false
+
+#CORS를 허용하는 출처를 명시
+#http.cors.allow-origin
+
+#허용하는 method를 명시 기본값 OPTIONS, HEAD, GET, POST, PUT, DELETE
+#http.cors.allow-methods:
+
+#허용하는 헤더를 명시  기본값 X-Requested-With, Content-Type, Content-Length.
+#http.cors.allow-headers
+
+#노드가 외부와  http 교신을 허용할지 여부 (기본값 true)
+#데이터 전용 노드의 경우 false 권장
+http.enabled: true
+
+
+##################
+# Shard Rebalancing 설정
+##################
+
+##################
+# Shard Balancing Heuristicsedit 설정
+##################
+
+
+##################
+# Shard Allocation 설정
+##################
+#all - (default) 모든 종류의 샤드에 대해 샤드 할당을 허용
+#primaries - 주샤드에만 샤드 할당 허용
+#new_primaries -주샤드에만 새 인덱스에 대한 기본 샤드에만 샤드 할당을 허용
+#none - 임의의 색인에 대해 어떤 종류의 분할도 허용되지 않음
+
+# 아래와 같이 동적 설정이 가능하며 통상적으로 몇몇 노드가 다운될때 샤드 재배치가 일어나는데
+# 인위적으로 순차적 재시작이 필요할때 샤드 재배치 작업이 오버헤드를 발생시키기 때문에 아래와 같이 기능을 잠시 꺼둘때 유용하다.
+#PUT _cluster/settings
+#{
+#  "transient": {
+#   "cluster.routing.allocation.enable": "none"
+#  }
+#}
+cluster.routing.allocation.enable: all
+
+#incoming(즉 복구의 대상이 되는) 샤드에 동시에 복구요청이 수신되는 수를 정함.
+cluster.routing.allocation.node_concurrent_incoming_recoveries: 2
+
+#outgoing(즉 복구하려는 원본이 되는) 샤드에 동시에 복구요청이 수신되는 수를 정함.
+cluster.routing.allocation.node_concurrent_outgoing_recoveries: 2
+
+#위 두설정을 함께 고려한 값
+cluster.routing.allocation.node_concurrent_recoveries: 2
+
+#복제본 복구는 네트워크에서 발생하지만 노드를 다시 시작한 후 할당되지 않은 기본 노드를 복구하면 로컬 디스크의 데이터가 사용
+#이러한 작업은 빠르지만 동일한 노드에서 더 많은 초기 기본 복구가 병렬로 발생할 수 있음.
+#클러스터의 재실행 후 처음 리커버리가 실행될 떄 몇개의 샤드 및 복사본을 동시에 재배치하는 작업을 할지 설정
+cluster.routing.allocation.node_initial_primaries_recoveries: 4
+
+#호스트 이름과 호스트 주소를 기반으로 단일 호스트에서 동일한 샤드의 여러 인스턴스 할당을 방지하는 검사를 수행
+#기본값은 false로 검사를 수행하지 않음
+#이 설정은 여러 노드가 동일한 시스템에서 시작된 경우에만 적용됩니다.
+cluster.routing.allocation.same_shard.host: false
+
+##################
+#Disk-based Shard Allocation 설정
+##################
+#디스크 사용에 대한 임계값을 사용하는가를 설정
+#색인은 디스크에 매우 민감 하기 때문에 true로 설정하고 그 아래 옵션들을 세밀히(보수적으로) 조정할 필요 있음
+cluster.routing.allocation.disk.threshold_enabled: true
+
+# 디스크 용량 기반으로 shard allocation을 도와주는 설정
+# 디스크 사용량이 설정값을 넘으면 해당 노드에는 shard를 allocation하지 않는다. unsigned shard가 생겼을때 체크해 봐야 할 사항
+#절대값으로 500mb 처럼 설정할 수도 있는데, 이 때에는 남은 디스크 용량을 의미
+cluster.routing.allocation.disk.watermark.low: 85%
+
+# 디스크 사용량이 설정값을 넘어가면 해당 노드의 샤드를 다른 노드로 relocation
+# `기본값은 90%`마찬가지로 절대값으로 정할 경우는 남은 용량 기준
+cluster.routing.allocation.disk.watermark.high: 90%
+
+# 클러스터의 shard balancing 관련 옵션
+# 이 값이 커지면 "모든 노드"에 샤드의 개수를 균등하게 분배하려는 경향이 강해진다는 것을 의미
+# `기본값은 0.45`
+cluster.routing.allocation.balance.shard: 0.45
+
+
+#  값이 커지면 "각 인덱스"에서 샤드의 개수를 균등하게 분배하려는 경향이 강해진다는 것을 의미
+#  이 값은 바로 위의 cluster.routing.allocation.balance.shard와 합해서 1.0이 되어야 함
+# `기본값은 0.55`
+cluster.routing.allocation.balance.index: 0.55
+
+# balancing action이 일어나도록 하는 threshold 값이다. 작을수록 balancing이 일어날 확률이 높아짐
+# `기본값은 1.0`이다.
+cluster.routing.allocation.balance.threshold: 1
+
+# shard rebalancing이 동시에 몇 개 까지 허용되는 지를 결정하는 값
+# `기본값은 1` 제한을 없애려면 -1 을 준다.
+cluster.routing.allocation.cluster_concurrent_rebalance: 1
+
+# 초당 설정값을 넘는 용량의 segemnt merge는 일어나지 않도록 throttle 시키는 옵션이다.
+# `기본값은 20mb`인데, 일반 하드 기준이므로 SSD를 사용하고 있다면 100~200mb 정도로 늘려주는 것이 좋음
+indices.store.throttle.max_bytes_per_sec: 20mb
+
+# 인덱스 당 동시에 디스크에 access할 수 있는 thread의 수이다.
+# `기본값은 Math.min(3, Runtime.getRuntime().availableProcessors() / 2)`이다.
+# 기본값은 SSD로 구성된 시스템에 권장되고, 일반하드를 사용할 경우에는 concurrent I/O에 취약하므로 값을 1로 줄여주는 것이 좋음
+index.merge.scheduler.max_thread_count: 1
+
+# translog에 설정값 이상이 쌓이면 flush된다.
+# `기본값은 200MB`인데, 덜 자주 flush되도록 값을 늘려주면 인덱싱 성능에 도움이 됨
+index.translog.flush_threshold_size: 200mb
+
+
+#노드가 디스크 공간을 모두 소모하지 않게하는 최후의 수단
+#노드가 디스크가 임계점을 넘었을때 하나 이상의 샤드가 할당된 모든 인덱스를 읽기전용으로 만듬.
+#마찬가지로 백분위와 절대값을 동시에 사용 가능
+cluster.routing.allocation.disk.watermark.flood_stage: 95%
+
+#디스크 상황을 얼마나 자주 체크할것인가를 설정 \
+cluster.info.update.interval: 30s
+
+#노드의 디스크 사용량을 계산할때 현재 재배치되고 있는 샤드도 함께 고려함
+cluster.routing.allocation.disk.include_relocations: true
+
+
+##################
+#Zen Discovery
+##################
+
+#Master 선출 설정
+#기본값은 1초마다 ping보내고,
+#30초 동안 응답이 없으면
+#3번 재시도 후 최종적으로 fault라고 단정함
+#위 조건이 성립되면 노드가 클러스터에서 이탈하는데
+#이탈을 하게 되면 나머지 노드가 샤드를 나누어 가지게 되는  shard allocation 발생
+#데이터 양이 많을 경우 CPU 부하가 매우 높아지므로 이를 느슨하게 변경할 필요가 생김(상황에 따라서
+discovery.zen.join_timeout: 20
+discovery.zen.ping_interval: 1s
+discovery.zen.ping_timeout: 30s
+discovery.zen.ping_retries: 3
+
+#split brain 현상을 회피하기 위해서 최소 마스터 자질 노드 숫자를 선정
+discovery.zen.minimum_master_nodes: 2
+
+
+#상기 상황에 충족하여 노드가 빠졌을때 shard allocation를 인위적으로 지연시킴
+index.unassigned.node_left.delayed_timeout: 5m
+
+##################
+#Local Gateway 설정 (설정 변경은 클러스터가 재시작되어야 적용)
+##################
+#게이트웨이 설정은 클러스터를 정지했다가 다시 가동시킬시에 작동되는 프로세스를 정의합니다.
+
+#클러스터에있을 것으로 예상되는 (데이터 또는 마스터) 노드의 수.
+#예상되는 노드 수가 클러스터에 결합되는 즉시 로컬 샤드 복구가 시작
+#예상되는 노드 수보다 적게 노드가 조인되면 노드가 조인되길 기다림.
+gateway.expected_nodes: 0
+
+#클러스터에있을 것으로 예상되는 마스터 노드의 수.
+gateway.expected_master_nodes: 0
+
+#클러스터에있을 것으로 예상되는 데이터 노드의 수.
+gateway.expected_data_nodes: 0
+
+
+#아래와 같이 recover_after*  설정을 하는 이유는 전체 노드가 충분히 조인되지 않은 상태에서
+#복구를 시작하면 노드에 대한 재조정작업을 불필요하게 많이 하기 때문
+#expected_nodes 설정 중 하나가 구성되면 설정된 시간을 기다렸다가 복구를 시작함
+gateway.recover_after_time: 5m
+
+#해당 수의 노드가 조인되지 않으면 복구를 시작하지 않음
+#예) 10개 노드가 있을때 8정도 수치로서 8할의 노드가 조인될 경우 복구를 시작하는게 바람직
+gateway.recover_after_nodes: 0
+
+#해당 수의 마스터 노드가 조인되지 않으면 복구를 시작하지 않음
+gateway.recover_after_master_nodes: 0
+
+#해당 수의 마스터 노드가 조인되지 않으면 복구를 시작하지 않음
+gateway.recover_after_data_nodes: 0
+
+
+
+##################
+#Fielddata
+##################
+#fielddata 캐쉬 사이즈 조정
+# 소팅이나 집계등에서 사용하는 메모리의 크기를 설정한다.
+# 30%  or 명시적 용량 적용 가능 12gb
+# (주의) indices.breaker.fielddata.limit 보다 크게 되면
+# 너무 큰 데이터 작업 시에 CircuitBreakingException이 발생 가능성 생김
+indices.fielddata.cache.size: 50%
+
+
+##################
+#Circuit Breaker 설정
+##################
+
+### fielddata 파트 ###
+#OutOfMemory Error를 막기 위해 메모리를 얼만큼 사용할 지를 정의
+#indices.fielddata.cache.size보다 크게 설정
+indices.breaker.fielddata.limit : 60%
+
+### request 파트 ###
+# 과도하게 높게 잡으면 잠재적 OOM exception을 동반한 시스템 다운 가능성이 높아지고
+# 너무 낮게 잡으면 쿼리가 실패할 확률이 높아짐. 시스템 다운보다는 쿼리 실패가 더 나은 상황이므로 보수적으로 접근(낮게 설정)하는것 추천
+# request마다 aggregation 등의 data structure가 사용할 메모리의 양을 제한
+indices.breaker.request.limit: 60%
+
+
+#fielddata와 request circuit breaker를 합쳐서 제한
+indices.breaker.total.limit: 70%
+
+
+##################
+#Indexing Buffer
+##################
+#색인시 사용하는 버퍼 사이즈를 정함. 색인 성능을 위해 늘릴수 있으나 힙메모리 사용 상황을 잘 고려해야함
+#백분율과 절대값중 하나를 사용
+indices.memory.index_buffer_size: 10%
+
+#상기 옵션인 index_buffer_size가 백분율로 지정된 경우
+#이 설정을 사용하여 절대 최소값을 지정할 수 있습니다.
+indices.memory.min_index_buffer_size: 48mb
+
+#상기 옵션인 index_buffer_size가 백분율로 지정된 경우
+#이 설정을 사용하여 절대 최대값을 지정할 수 있습니다.
+#기본값은 제한이 없습니다
+#indices.memory.max_index_buffer_size:
+
+
+##################
+#Node Query Cache 설정 (인덱스 레벨 설정 가능)
+##################
+#쿼리 결과를 캐싱하게 되므로 쿼리 성능 향상을 위한 튜닝에 사용
+#쿼리 캐시는 필터 컨텍스트에서 사용되는 쿼리 만 캐시
+#기본적으로 LRU 정책이기 때문에 최근에 적게 사용된 캐쉬부터 지움
+
+#캐쉬 사이즈를 전체 힙메모리의 백분위 혹은 절대값으로 지정
+indices.queries.cache.size: 10%
+
+#캐쉬를 사용할지 말지 결정. 특수한 경우가 아니면 true
+index.queries.cache.enabled: true
+
+
+##################
+#Shard Request Cache
+##################
+#유저가 입력한 쿼리는 조정노드(코디네이터 노드)가 받아서 각 샤드가 처리한 뒤에 다시 조정노드가 집계하여 결과를 리턴함
+#이때 코디네이터 노드쪽으로 보내는 쿼리 요청을 캐싱하는것이 Shard Request Cache임
+#이러한 샤드 수준 요청 캐시 모듈은 각 샤드에 로컬 결과를 캐시함.
+#이렇게하면 자주 사용되는 (그리고 잠재적으로 무거운) 검색 요청이 거의 즉시 결과를 반환 할 수 있음
+indices.requests.cache.size: 2%
+
+##################
+#색인 복구 설정 (동적 설정 가능)
+##################
+#복구 수행시, 초당 처리할 데이터의 최대 용량을 설정하는 항목이다.
+indices.recovery.max_bytes_per_sec: 40mb
+
+##################
+#Search Slow Log 설정
+##################
+#느린 쿼리를 모니터링 하기위해 각 로그별로 임계치를 설정함
+# query 단계, fetch  단계, indexing 단계별로 설정 가능
+# query 단계란? 유저의 쿼리를 받아 각 샤드로 쿼리를 보낸후 결과를 받아내어 정렬시킨 상태
+# fetch 단계란? 가져올 문서를 식별하고 관련 샤드에 다중 GET 요청을 보내  _source 및 하일라이팅 등 문서 원본을 가져와
+#             결과를 리턴할 준비를 마친 상태
+
+index.search.slowlog.threshold.query.warn: 10s
+index.search.slowlog.threshold.query.info: 5s
+index.search.slowlog.threshold.query.debug: 2s
+index.search.slowlog.threshold.query.trace: 500ms
+
+index.search.slowlog.threshold.fetch.warn: 1s
+index.search.slowlog.threshold.fetch.info: 800ms
+index.search.slowlog.threshold.fetch.debug: 500ms
+index.search.slowlog.threshold.fetch.trace: 200ms
+
+index.search.slowlog.level: info
+
+index.indexing.slowlog.threshold.index.warn: 10s
+index.indexing.slowlog.threshold.index.info: 5s
+index.indexing.slowlog.threshold.index.debug: 2s
+index.indexing.slowlog.threshold.index.trace: 500ms
+index.indexing.slowlog.level: info
+index.indexing.slowlog.source: 1000

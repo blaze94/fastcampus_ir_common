@@ -29,6 +29,7 @@ sudo service nginx start
 sudo chown -R ec2-user.ec2-user /var/log/nginx /usr/share/nginx/html
 echo "<h1>Hello World</h1>" > /usr/share/nginx/html/hello.html
 
+{서버 아이피}/hello.html
 
 로그스태쉬만 사용하기
 vi nginx.conf
