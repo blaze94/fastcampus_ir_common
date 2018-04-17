@@ -195,20 +195,34 @@ cluster.routing.allocation.disk.include_relocations: true
 # 인덱스 당 동시에 디스크에 access할 수 있는 thread의 수이다.
 # `기본값은 Math.min(3, Runtime.getRuntime().availableProcessors() / 2)`이다.
 # 기본값은 SSD로 구성된 시스템에 권장되고, 일반하드를 사용할 경우에는 concurrent I/O에 취약하므로 값을 1로 줄여주는 것이 좋음
-index.merge.scheduler.max_thread_count: 1
+#index.merge.scheduler.max_thread_count: 1
 
 ##################
 #Translog 설정
 ##################
 
-index.translog.sync_interval: 5s
-index.translog.durability: request
+#index.translog.sync_interval: 5s
+#index.translog.durability: request
 
 # translog에 설정값 이상이 쌓이면 flush된다.
 # `기본값은 512mb`인데, 덜 자주 flush되도록 값을 늘려주면 인덱싱 성능에 도움이 됨
-index.translog.flush_threshold_size: 512mb
-index.translog.retention.size: 512mb
-index.translog.retention.age: 12h
+#index.translog.flush_threshold_size: 512mb
+#index.translog.retention.size: 512mb
+#index.translog.retention.age: 12h
+
+
+#상기 모든 설정은 5.0 이후 index setting으로 변경되었으므로 아래와 같이 설정함.
+
+#curl -XPUT 'http://localhost:9200/_all/_settings?preserve_existing=true' -d '{
+#  "index.merge.scheduler.max_thread_count" : "1",
+#  "index.queries.cache.enabled" : "true",
+#  "index.translog.durability" : "request",
+#  "index.translog.flush_threshold_size" : "512mb",
+#  "index.translog.retention.age" : "12h",
+#  "index.translog.retention.size" : "512mb",
+#  "index.translog.sync_interval" : "5s",
+#  "index.unassigned.node_left.delayed_timeout" : "5m"
+#}'
 
 
 
@@ -405,29 +419,29 @@ indices.recovery.max_bytes_per_sec: 40mb
 #index.indexing.slowlog.level: info
 #index.indexing.slowlog.source: 1000
 
-#하기 모든 설정은 5.0 이후 index setting으로 변경되었으므로 아래와 같이 설정함.
-curl -XPUT 'http://localhost:9200/_all/_settings?preserve_existing=true' -d '{
-  "index.indexing.slowlog.level" : "info",
-  "index.indexing.slowlog.source" : "1000",
-  "index.indexing.slowlog.threshold.index.debug" : "2s",
-  "index.indexing.slowlog.threshold.index.info" : "5s",
-  "index.indexing.slowlog.threshold.index.trace" : "500ms",
-  "index.indexing.slowlog.threshold.index.warn" : "10s",
-  "index.merge.scheduler.max_thread_count" : "1",
-  "index.queries.cache.enabled" : "true",
-  "index.search.slowlog.level" : "info",
-  "index.search.slowlog.threshold.fetch.debug" : "500ms",
-  "index.search.slowlog.threshold.fetch.info" : "800ms",
-  "index.search.slowlog.threshold.fetch.trace" : "200ms",
-  "index.search.slowlog.threshold.fetch.warn" : "1s",
-  "index.search.slowlog.threshold.query.debug" : "2s",
-  "index.search.slowlog.threshold.query.info" : "5s",
-  "index.search.slowlog.threshold.query.trace" : "500ms",
-  "index.search.slowlog.threshold.query.warn" : "10s",
-  "index.translog.durability" : "request",
-  "index.translog.flush_threshold_size" : "512mb",
-  "index.translog.retention.age" : "12h",
-  "index.translog.retention.size" : "512mb",
-  "index.translog.sync_interval" : "5s",
-  "index.unassigned.node_left.delayed_timeout" : "5m"
-}'
+#상기 모든 설정은 5.0 이후 index setting으로 변경되었으므로 아래와 같이 설정함.
+#curl -XPUT 'http://localhost:9200/_all/_settings?preserve_existing=true' -d '{
+#  "index.indexing.slowlog.level" : "info",
+#  "index.indexing.slowlog.source" : "1000",
+#  "index.indexing.slowlog.threshold.index.debug" : "2s",
+#  "index.indexing.slowlog.threshold.index.info" : "5s",
+#  "index.indexing.slowlog.threshold.index.trace" : "500ms",
+#  "index.indexing.slowlog.threshold.index.warn" : "10s",
+#  "index.merge.scheduler.max_thread_count" : "1",
+#  "index.queries.cache.enabled" : "true",
+#  "index.search.slowlog.level" : "info",
+#  "index.search.slowlog.threshold.fetch.debug" : "500ms",
+#  "index.search.slowlog.threshold.fetch.info" : "800ms",
+#  "index.search.slowlog.threshold.fetch.trace" : "200ms",
+#  "index.search.slowlog.threshold.fetch.warn" : "1s",
+#  "index.search.slowlog.threshold.query.debug" : "2s",
+#  "index.search.slowlog.threshold.query.info" : "5s",
+#  "index.search.slowlog.threshold.query.trace" : "500ms",
+#  "index.search.slowlog.threshold.query.warn" : "10s",
+#  "index.translog.durability" : "request",
+#  "index.translog.flush_threshold_size" : "512mb",
+#  "index.translog.retention.age" : "12h",
+#  "index.translog.retention.size" : "512mb",
+#  "index.translog.sync_interval" : "5s",
+#  "index.unassigned.node_left.delayed_timeout" : "5m"
+#}'
