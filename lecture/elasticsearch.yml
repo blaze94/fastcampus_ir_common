@@ -83,10 +83,6 @@ discovery.zen.ping.multicast.enabled: false
 # 무분별하게 의도치 않은 색인이 생성될 가능성이 있으므로 production에서는 끄는 것이 좋다
 action.auto_create_index: true
 
-# 매핑이 생성되지 않았을시 첫 문서의 색인시 자동으로 매핑을 생성서키는 설정
-# 의도된 정확한 매핑을 지정하여 사용하는 것이 좋다
-index.mapper.dynamic: true
-
 #>> curl -XDELETE 'http://localhost:9200/_all/'
 #상기와 같이 실수로 모든 색인을 삭제하는 것을 막는다(true 설정)
 action.destructive_requires_name: false
