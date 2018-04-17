@@ -195,12 +195,18 @@ cluster.routing.allocation.disk.include_relocations: true
 # 기본값은 SSD로 구성된 시스템에 권장되고, 일반하드를 사용할 경우에는 concurrent I/O에 취약하므로 값을 1로 줄여주는 것이 좋음
 index.merge.scheduler.max_thread_count: 1
 
+##################
+#Translog 설정
+##################
+
+index.translog.sync_interval: 5s
+index.translog.durability: request
+
 # translog에 설정값 이상이 쌓이면 flush된다.
-# `기본값은 200MB`인데, 덜 자주 flush되도록 값을 늘려주면 인덱싱 성능에 도움이 됨
-index.translog.flush_threshold_size: 200mb
-
-
-
+# `기본값은 512mb`인데, 덜 자주 flush되도록 값을 늘려주면 인덱싱 성능에 도움이 됨
+index.translog.flush_threshold_size: 512mb
+index.translog.retention.size: 512mb
+index.translog.retention.age: 12h
 
 
 
