@@ -371,8 +371,13 @@ indices.memory.min_index_buffer_size: 48mb
 indices.queries.cache.size: 10%
 
 #캐쉬를 사용할지 말지 결정. 특수한 경우가 아니면 true
-index.queries.cache.enabled: true
+#index.queries.cache.enabled: true
 
+#상기 모든 설정은 5.0 이후 index setting으로 변경되었으므로 아래와 같이 설정함.
+#curl -XPUT 'http://localhost:9200/_all/_settings?preserve_existing=true' -d '{
+#  "index.queries.cache.enabled" : "true",
+#  "index.unassigned.node_left.delayed_timeout" : "5m"
+#}'
 
 ##################
 #Shard Request Cache
