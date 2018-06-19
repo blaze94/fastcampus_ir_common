@@ -30,8 +30,8 @@ sudo yum install java-1.8.0-openjdk-devel.x86_64
 java -version
 
 -시스템에서 사용할 자바 버전 변경
-alternatives --config java
-alternatives --config javac
+sudo alternatives --config java
+sudo alternatives --config javac
 
 
 
@@ -71,7 +71,8 @@ ec2-user hard nofile 65536
 ec2-user soft nofile 65536
 ec2-user hard nproc 65536
 ec2-user soft nproc 65536
-
+ec2-user soft memlock unlimited
+ec2-user hard memlock unlimited
 ---------------------------------------------------------------------------------------------------------
 8. vm.max_map_count 부족 오류 해결 (프로세스가 사용할 수 있는 메모리 맵 영역의 최대 수)
 -설정되어 있는 vm.max_map_count 값 확인
@@ -135,7 +136,7 @@ PUT http://localhost:9200/news
   }
 }
 
-2) 인덱스가 이미 존재하면2.기본데이터CRUD.txt
+2) 인덱스가 이미 존재하면
 -XPOST http://13.124.207.175:9200/news/_close
 -PUT http://13.124.207.175:9200/news/_settings
 {
@@ -218,8 +219,5 @@ config/jvm.options
 -Dcom.sun.management.jmxremote.rmi.port=9998
 -Dcom.sun.management.jmxremote.ssl=false
 -Dcom.sun.management.jmxremote.authenticate=false
--Djava.rmi.server.hostname=52.79.80.70
+-Djava.rmi.server.hostname={호스트주소}
 
-
-jstat 이용하기
-jstat -gc 13963 1000
