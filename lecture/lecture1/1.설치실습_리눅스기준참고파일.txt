@@ -12,7 +12,7 @@ puttygen 실행
 open 후 fastcampus.pem을 선택후 [Save private key] 저장
 
 putty 실행후
-호스트명 ec2-user@52.78.129.114 접속
+호스트명 ec2-user@{할당해드린 주소} 접속
 putty configuration 에서 [ssh]-[auth] 메뉴에서 private key for authentication 메뉴를 통해 생성한 키값 로드
 
 
@@ -23,9 +23,9 @@ exit
 ---------------------------------------------------------------------------------------------------------
 2. 자바8 설치 (root 계정으로)
 -설치가능한 자바 버전 확인
-yum list java*jdk-devel
+sudo yum list java*jdk-devel
 -설치
-yum install java-1.8.0-openjdk-devel.x86_64
+sudo yum install java-1.8.0-openjdk-devel.x86_64
 
 java -version
 
@@ -73,12 +73,12 @@ ec2-user hard nproc 65536
 ec2-user soft nproc 65536
 
 ---------------------------------------------------------------------------------------------------------
-8. vm.max_map_count 부족 오류 해결 (루트 계정으로)
+8. vm.max_map_count 부족 오류 해결 (프로세스가 사용할 수 있는 메모리 맵 영역의 최대 수)
 -설정되어 있는 vm.max_map_count 값 확인
-$ sysctl vm.max_map_count
+$ sudo sysctl vm.max_map_count
 
 -vm.max_map_count 값 설정
-$ sysctl -w vm.max_map_count=262144
+$ sudo sysctl -w vm.max_map_count=262144
 
 -conf 파일로 설정
 $ sudo vi /etc/sysctl.conf
