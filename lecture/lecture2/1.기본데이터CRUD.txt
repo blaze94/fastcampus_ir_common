@@ -138,9 +138,6 @@ input {
     jdbc_user => "news_user"
     jdbc_password => "news_user11"
     statement => "SELECT * FROM  NewsData LIMIT 1000"
-    jdbc_paging_enabled => "true"
-    jdbc_page_size => "5000"
-    schedule => "* * * * *"
   }
 }
 
@@ -157,8 +154,9 @@ output {
         codec => rubydebug
     }
   elasticsearch {
+    document_id => "%{id}"
     hosts => ["127.0.0.1:9200"]
-          index => "news"
+    index => "news"
   }
 }
 
