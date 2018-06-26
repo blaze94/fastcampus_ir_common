@@ -23,7 +23,7 @@ http://{호스트}:{포트}/{색인}/{타입}/{아이디}
 
 
 데이터 확인
--XGET http://localhost:9200/news/article/1
+-XGET news/article/1
 
 아이디를 안 넣는 경우 PUT으로는 입력할수 없고 POST로 입력 가능
 http://localhost:9200/news/article/
@@ -31,7 +31,7 @@ http://localhost:9200/news/article/
 3.데이터 수정
 POST,PUT으로 다시 입력하면 수정된다. version이 변경됨
 
--XPUT http://localhost:9200/news/article/1
+-XPUT news/article/1
 {
 	"title" : "부산 뇌전증 환자 교통사고 대응조치…장애등급 판정자도 포함",
 	"author" : "수정 수정 수정",
@@ -42,7 +42,7 @@ POST,PUT으로 다시 입력하면 수정된다. version이 변경됨
 
 데이터의 부분 수정
 _update API에 POST로 수정함
--XPOST http://localhost:9200/news/article/1/_update
+-XPOST news/article/1/_update
 
 {
 	"doc" : {
@@ -60,20 +60,49 @@ $ curl -XDELETE 'http://localhost:9200/_all'
 
 모든것을 삭제하기를 방지하기 위한 옵션
 action.destructive_requires_name: true
+
+curl -XPUT localhost:9200/_cluster/settings -d '{
+    "transient" : {
+        "action.destructive_requires_name" : true
+    }
+}'
+
 ---------------------------------------------------------------------------------------------------------
 5. 벌크 인서트
--XPOST http://localhost:9200/news/article/_bulk
+Content-Type: application/x-ndjson
+-XPOST news/article/_bulk
 
-{ "index" : { "_index" : "test", "_type" : "type1", "_id" : "1" } }
+{ "index" : { "_index" : "news3", "_type" : "doc", "_id" : "1" } }
 { "title" : "부산 뇌전증 환자 교통사고 대응조치…장애등급 판정자도 포함","author" : "정대기 기자","date" : "2016-08-02 13:50:00","content": "최근 부산에서 뇌전증 환자가 차를 몰다 도심에서 17명의 사상자를 낸 사고와 관련, 경찰이 운전면허 수시적성검사 대상인 뇌전증 환자의 범위를 확대하는 내용으로 관련 법령을 손보기로 했다." }
-{ "delete" : { "_index" : "test", "_type" : "type1", "_id" : "2" } }
-{ "create" : { "_index" : "test", "_type" : "type1", "_id" : "3" } }
-{ "field1" : "value3" }
-{ "update" : {"_id" : "1", "_type" : "type1", "_index" : "test"} }
+{ "delete" : { "_index" : "news3", "_type" : "doc", "_id" : "2" } }
+{ "create" : { "_index" : "news3", "_type" : "doc", "_id" : "3" } }
+{ "title" : "부산 뇌전증 환자 교통사고 대응조치…장애등급 판정자도 포함","author" : "정대기 기자","date" : "2016-08-02 13:50:00","content": "최근 부산에서 뇌전증 환자가 차를 몰다 도심에서 17명의 사상자를 낸 사고와 관련, 경찰이 운전면허 수시적성검사 대상인 뇌전증 환자의 범위를 확대하는 내용으로 관련 법령을 손보기로 했다." }
+{ "update" : {"_id" : "1", "_type" : "doc", "_index" : "news3"} }
 { "doc" : {"field2" : "value2"} }
+
+curl -X POST "localhost:9200/_bulk" -H 'Content-Type: application/json' -d'
+{ "index" : { "_index" : "news3", "_type" : "doc", "_id" : "1" } }
+{ "title" : "부산 뇌전증 환자 교통사고 대응조치…장애등급 판정자도 포함","author" : "정대기 기자","date" : "2016-08-02 13:50:00","content": "최근 부산에서 뇌전증 환자가 차를 몰다 도심에서 17명의 사상자를 낸 사고와 관련, 경찰이 운전면허 수시적성검사 대상인 뇌전증 환자의 범위를 확대하는 내용으로 관련 법령을 손보기로 했다." }
+{ "delete" : { "_index" : "news3", "_type" : "doc", "_id" : "2" } }
+{ "create" : { "_index" : "news3", "_type" : "doc", "_id" : "3" } }
+{ "title" : "부산 뇌전증 환자 교통사고 대응조치…장애등급 판정자도 포함","author" : "정대기 기자","date" : "2016-08-02 13:50:00","content": "최근 부산에서 뇌전증 환자가 차를 몰다 도심에서 17명의 사상자를 낸 사고와 관련, 경찰이 운전면허 수시적성검사 대상인 뇌전증 환자의 범위를 확대하는 내용으로 관련 법령을 손보기로 했다." }
+{ "update" : {"_id" : "1", "_type" : "doc", "_index" : "news3"} }
+{ "doc" : {"field2" : "value2"} }
+'
+
 
 로컬 파일을 넣는법
 curl -XPOST 'http://localhost:9200/_bulk' -H "Content-Type:application/json" --data-binary @test.json
+
+@test.json
+{ "index" : { "_index" : "news", "_type" : "article", "_id" : "1" } }
+{ "field1" : "value1" }
+{ "delete" : { "_index" : "news", "_type" : "article", "_id" : "2" } }
+{ "create" : { "_index" : "news", "_type" : "article", "_id" : "3" } }
+{ "field1" : "value3" }
+{ "update" : {"_id" : "1", "_type" : "article", "_index" : "news"} }
+{ "doc" : {"field2" : "value2"} }
+
 ---------------------------------------------------------------------------------------------------------
 
 6. 벌크 DELETE
@@ -82,6 +111,7 @@ curl -XPOST 'http://localhost:9200/_bulk' -H "Content-Type:application/json" --d
 { "delete":{ "_index" : "news", "_type" : "article", "_id" : "9" } }
 { "delete":{ "_index" : "news", "_type" : "article", "_id" : "10" } }
 ---------------------------------------------------------------------------------------------------------
+
 7. Logstash를 이용한 색인
 -logstash 다운로드
 wget "https://artifacts.elastic.co/downloads/logstash/logstash-6.1.3.tar.gz"
