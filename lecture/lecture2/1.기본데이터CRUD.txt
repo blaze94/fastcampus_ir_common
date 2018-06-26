@@ -156,6 +156,7 @@ output {
   elasticsearch {
     document_id => "%{id}"
     hosts => ["127.0.0.1:9200"]
+    routing => "%{media}"
     index => "news"
   }
 }
@@ -184,14 +185,15 @@ WHERE id > :sql_last_value"
 }
 
 검색 테스트
-GET news/_search
+GET news/_search?routing=조선포토
 {
-  "query": {
-    "terms": {
-      "_routing": [ "class1" ]
+    "query": {
+        "terms" : {
+            "title" : ["고양이","산소"]
+        }
     }
-  }
 }
+
 
 매핑으로 라우팅 path를 지정하는 것은 deprecated됨
 
