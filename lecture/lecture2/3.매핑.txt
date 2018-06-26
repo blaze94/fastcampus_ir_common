@@ -1,0 +1,468 @@
+1. 매핑 테스트
+기본 매핑 입력해 보기1
+
+1) 인덱스에 PUT을 하며 타입을 JSON에 지정
+PUT http://localhost:9200/news
+{
+  "settings" : {
+    "index":{
+      "analysis":{
+        "analyzer":{
+          "korean":{
+            "type":"custom",
+            "tokenizer":"seunjeon_tokenizer"
+          },
+          "korean_noun": {
+            "type":"custom",
+            "tokenizer":"noun_tokenizer"
+          }
+        },
+        "tokenizer": {
+          "seunjeon_tokenizer": {
+            "type": "seunjeon_tokenizer",
+            "user_words": ["낄끼빠빠,-100", "버카충"]
+          },
+          "noun_tokenizer": {
+            "type": "seunjeon_tokenizer",
+            "index_eojeol": false,
+            "index_poses": ["N"]
+          }
+        }
+      }
+    }
+  },
+  "mappings": {
+    "article": {
+      "properties": {
+        "title": {
+          "type" : "text",
+          "analyzer": "korean",
+          "fields": {
+              "raw": {
+                "type":  "keyword"
+              }
+            },
+            "boost": 10
+        },
+        "link" : {
+          "type" : "keyword"
+        },
+        "description" : {
+            "type" : "text",
+            "analyzer": "korean",
+            "boost": 1
+        },
+        "author" : {
+            "type" : "text",
+            "analyzer": "korean",
+            "fields": {
+              "raw": {
+                "type":  "keyword"
+              }
+            },
+            "boost": 5
+        },
+        "media" : {
+          "type" : "keyword"
+        },
+        "category" : {
+          "type" : "keyword"
+        },
+        "modDate" : {
+          "type" : "date"
+        }
+      }
+    }
+  }
+}
+
+2)_mapping API에 바로 입력하는 경우
+PUT http://localhost:9200/news/_mappings/article
+{
+      "properties": {
+        "title": {
+          "type" : "text",
+          "analyzer": "korean",
+          "fields": {
+              "raw": {
+                "type":  "keyword"
+              }
+            },
+            "boost": 10
+        },
+        "link" : {
+          "type" : "keyword"
+        },
+        "description" : {
+            "type" : "text",
+            "analyzer": "korean",
+            "boost": 1
+        },
+        "author" : {
+            "type" : "text",
+            "analyzer": "korean",
+            "fields": {
+              "raw": {
+                "type":  "keyword"
+              }
+            },
+            "boost": 5
+        },
+        "media" : {
+          "type" : "keyword"
+        },
+        "category" : {
+          "type" : "keyword"
+        },
+        "modDate" : {
+          "type" : "date"
+        }
+      }
+}
+
+---------------------------------------------------------------------------------------------------------
+
+2. 설정된 매핑 조회
+GET http://localhost:9200/news/_mapping/article
+
+
+
+
+---------------------------------------------------------------------------------------------------------
+
+3. 색인을 위한 템플릿 추가
+
+-XPUT 'localhost:9200/_template/news_temp
+{
+    "template" : "news*",
+    "settings" : {
+        "index.refresh_interval" : "5s",
+        "number_of_shards": 3,
+        "number_of_replicas": 1,
+        "index":{
+              "analysis":{
+                "analyzer":{
+                  "korean":{
+                    "type":"custom",
+                    "tokenizer":"seunjeon_tokenizer"
+                  },
+                  "korean_noun": {
+                    "type":"custom",
+                    "tokenizer":"noun_tokenizer"
+                  }
+                },
+                "tokenizer": {
+                  "seunjeon_tokenizer": {
+                    "type": "seunjeon_tokenizer",
+                    "user_words": ["낄끼빠빠,-100", "버카충"]
+                  },
+                  "noun_tokenizer": {
+                    "type": "seunjeon_tokenizer",
+                    "index_eojeol": false,
+                    "index_poses": ["N"]
+                  }
+                }
+              }
+            }
+    },
+    "mappings" : {
+        "article": {
+          "properties": {
+            "title": {
+              "type" : "text",
+              "analyzer": "korean",
+              "fields": {
+                  "raw": {
+                    "type":  "keyword"
+                  }
+                },
+                "boost": 10
+            },
+            "link" : {
+              "type" : "keyword"
+            },
+            "description" : {
+                "type" : "text",
+                "analyzer": "korean",
+                "boost": 1
+            },
+            "author" : {
+                "type" : "text",
+                "analyzer": "korean",
+                "fields": {
+                  "raw": {
+                    "type":  "keyword"
+                  }
+                },
+                "boost": 5
+            },
+            "media" : {
+              "type" : "keyword"
+            },
+            "category" : {
+              "type" : "keyword"
+            },
+            "modDate" : {
+              "type" : "date"
+            }
+          }
+        }
+    }
+}
+
+인덱스명이 news* 이하인 것은 템플릿을 따름
+템플릿 조회
+-XGET 'localhost:9200/_template/test_temp
+
+템플릿 삭제
+-XDELETE /_template/test_temp
+
+---------------------------------------------------------------------------------------------------------
+4. 다이나믹 템플릿
+-XPUT 'localhost:9200/store
+{
+  "mappings": {
+    "my_type": {
+      "dynamic_templates": [
+        {
+          "integers": {
+            "match_mapping_type": "long",
+            "mapping": {
+              "type": "integer"
+            }
+          }
+        },
+        {
+          "strings": {
+            "match_mapping_type": "string",
+            "mapping": {
+              "type": "text",
+              "fields": {
+                "raw": {
+                  "type":  "keyword",
+                  "ignore_above": 256
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}
+
+데이터 입력시
+PUT store/item/1
+{
+  "my_integer": 5,
+  "my_string": "Some string"
+}
+
+---------------------------------------------------------------------------------------------------------
+5. 중첩된 매핑 (Array)
+1) 데이터 입력
+PUT http://localhost:9200/array_index/array_type/1
+{
+  "group" : "fans",
+  "user" : [
+    {
+      "first" : "John",
+      "last" :  "Smith"
+    },
+    {
+      "first" : "Alice",
+      "last" :  "White"
+    }
+  ]
+}
+
+2) 검색
+GET http://localhost:9200/array_index/array_type/_search
+{
+  "query": {
+    "bool": {
+      "must": [
+        { "match": { "user.first": "Alice" }},
+        { "match": { "user.last":  "Smith" }}
+      ]
+    }
+  }
+}
+Cross Match 확인
+
+---------------------------------------------------------------------------------------------------------
+6. 중첩된 매핑 (nested)
+
+1) 중첩 매핑 설정
+-XPUT http://localhost:9200/nested_index/
+{
+  "mappings": {
+    "nested_type": {
+      "properties": {
+        "user": {
+          "type": "nested"
+        }
+      }
+    }
+  }
+}
+
+2) 데이터 입력
+-XPUT http://localhost:9200/nested_index/nested_type/1
+{
+  "group" : "fans",
+  "user" : [
+    {
+      "first" : "John",
+      "last" :  "Smith"
+    },
+    {
+      "first" : "Alice",
+      "last" :  "White"
+    }
+  ]
+}
+
+3) 중첩 쿼리
+
+-XPOST http://localhost:9200/nested_index/_search
+{
+  "query": {
+    "nested": {
+      "path": "user",
+      "query": {
+        "bool": {
+          "must": [
+            { "match": { "user.first": "Alice" }},
+            { "match": { "user.last":  "Smith" }}
+          ]
+        }
+      }
+    }
+  }
+}
+
+Cross Match 안되는 것을 확인
+---------------------------------------------------------------------------------------------------------
+
+7. 중첩된 매핑 (Object)
+
+1) 중첩 오브젝트 매핑 하기
+-XPUT http://localhost:9200/object_index
+{
+  "mappings": {
+    "object_type": {
+      "properties": {
+        "region": {
+          "type": "keyword"
+        },
+        "manager": {
+          "properties": {
+            "age":  { "type": "integer" },
+            "name": {
+              "properties": {
+                "first": { "type": "text" },
+                "last":  { "type": "text" }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+2) 데이터 입력
+-XPUT http://localhost:9200/object_index/object_type/1
+{
+  "region": "US",
+  "manager": {
+    "age":     30,
+    "name": {
+      "first": "John",
+      "last":  "Smith"
+    }
+  }
+}
+
+
+---------------------------------------------------------------------------------------------------------
+
+6. 좌표검색 매핑
+1) 매핑하기
+-XPUT http://localhost:9200/news/_mapping/store
+{
+  "properties" : {
+    "store_name" : {
+      "type" : "string"
+    },
+    "location" : {
+      "type" : "geo_point"
+    }
+  }
+}
+
+데이터 입력
+{
+    "store_name":"스타벅스 커피 전문점",
+    "location":"37.525434,126.926644"
+}
+
+
+2) 좌표 검색 테스트
+-XGET http://localhost:9200/news/store/_search
+{
+    "query" : {
+      "bool" : {
+          "must" : {
+              "match_all": {}
+          },
+          "filter" : {
+              "geo_distance" : {
+                  "distance" : "20990km",
+                  "distance_type": "plane",
+                  "location" : {
+                      "lat" : 37.2323,
+                      "lon" : 126.232323
+                  }
+              }
+          }
+      }
+    },"sort" : [
+             {
+                 "_geo_distance" : {
+                     "location" : [126.926644, 37.523434],
+                     "order" : "asc",
+                     "unit" : "km"
+                 }
+             }
+         ]
+}
+
+
+2) 폴리곤 검색 테스트
+
+-XGET http://localhost:9200/news/store/_search
+{
+    "query": {
+        "bool" : {
+            "must" : {
+                "match_all" : {}
+            },
+            "filter" : {
+                "geo_polygon" : {
+                    "person.location" : {
+                        "points" : [
+                        {"lat" : 40, "lon" : -70},
+                        {"lat" : 30, "lon" : -80},
+                        {"lat" : 20, "lon" : -90}
+                        ]
+                    }
+                }
+            }
+        }
+    }
+}
+
+
+
