@@ -94,7 +94,7 @@ curl -X POST "localhost:9200/_bulk" -H 'Content-Type: application/json' -d'
 로컬 파일을 넣는법
 curl -XPOST 'http://localhost:9200/_bulk' -H "Content-Type:application/json" --data-binary @test.json
 
-@test.json
+test.json
 { "index" : { "_index" : "news", "_type" : "article", "_id" : "1" } }
 { "field1" : "value1" }
 { "delete" : { "_index" : "news", "_type" : "article", "_id" : "2" } }
@@ -138,6 +138,16 @@ input {
     jdbc_user => "news_user"
     jdbc_password => "news_user11"
     statement => "SELECT * FROM  NewsData LIMIT 1000"
+    tracking_column => "updated_column"
+    tracking_column_type => "timestamp"
+
+    tracking_column => "id"
+
+
+    WHERE 절 추가 가능  "updated_column" > :sql_last_value
+    WHERE id > :sql_last_value"
+
+
   }
 }
 
