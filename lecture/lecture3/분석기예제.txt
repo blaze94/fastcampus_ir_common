@@ -60,13 +60,13 @@ curl -XPUT ‘http://localhost:9200/books' -d ‘
                     }
                 },
                 "filter" : {
-                    "synonym" : {
-                        "type" : "synonym",
+                    "stop" : {
+                        "type" : "stop",
                         "synonyms" : [
                             "i-pod, i pod => ipod",
                             "삼성, samsung"
                         ],
-                        "synonyms_path" : "analysis/synonym.txt"
+                        "synonyms_path" : "analysis/stops.txt"
                     }
                 }
             }

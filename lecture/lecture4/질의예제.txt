@@ -1,0 +1,945 @@
+1. 엘라스틱 서버 설치
+설치됨
+
+2. 엘라스틱 플러그인 설치
+은전한닢
+아리랑
+
+3. 데이터 확인
+jdbc_connection_string => "jdbc:mysql://svn.queryjet.net:23306/newsdb"
+jdbc_user => "news_user"
+jdbc_password => "news_user11"
+
+
+PRODUCT 테이블을 색인해 봅시다
+CREATE TABLE `Product` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `product_name` varchar(100) DEFAULT NULL,
+  `price` varchar(50) DEFAULT NULL,
+  `category` varchar(100) DEFAULT NULL,
+  `manufacturer` varchar(100) DEFAULT NULL,
+  `image` varchar(1000) DEFAULT NULL,
+  `content` varchar(20000) DEFAULT NULL,
+  `reg_date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `Product_id_uindex` (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=1212 DEFAULT CHARSET=utf8;
+
+4. 매핑 설계
+
+
+/home/ec2-user/elasticsearch-6.1.3/config/analysis/synonym.txt
+/home/ec2-user/elasticsearch-6.1.3/config/analysis/stopword.txt
+
+PUT product
+{
+  "settings" : {
+    "index":{
+      "analysis":{
+        "analyzer":{
+          "korean":{
+            "type":"custom",
+            "char_filter" :  ["html_strip"],
+            "tokenizer":"seunjeon_tokenizer",
+            "filter" : ["lowercase","my_synonym","my_stop"]
+          },
+          "korean_noun": {
+            "type":"custom",
+            "char_filter" :  ["html_strip"],
+            "tokenizer":"noun_tokenizer",
+            "filter" : ["lowercase","my_synonym","my_stop"]
+          }
+        },
+        "tokenizer": {
+          "seunjeon_tokenizer": {
+            "type": "seunjeon_tokenizer",
+            "pos_tagging": false,
+            "user_words": ["낄끼빠빠,-100", "버카충"]
+          },
+          "noun_tokenizer": {
+            "type": "seunjeon_tokenizer",
+            "index_eojeol": false,
+            "pos_tagging": false,
+            "index_poses": ["N"]
+          }
+        },
+        "filter" : {
+            "my_synonym" : {
+                "type" : "synonym",
+                "synonyms_path" : "analysis/synonym.txt"
+            },
+            "my_stop" : {
+                "type" : "stop",
+                "stopwords_path" : "analysis/stopword.txt"
+            }
+        }
+      }
+    }
+  },
+  "mappings": {
+    "item": {
+      "_all": {
+        "enabled": false
+      },
+      "properties": {
+        "product_name": {
+          "type" : "text",
+          "analyzer": "korean",
+          "fields": {
+                "raw": {
+                    "type":  "keyword"
+                },
+                "noun": {
+                  "type":  "text",
+                  "analyzer": "korean_noun",
+                  "boost": 10
+                }
+            }
+        },
+        "price" : {
+          "type" : "integer"
+        },
+        "category": {
+          "type" : "text",
+          "analyzer": "korean",
+          "fields": {
+              "raw": {
+                "type":  "keyword"
+              }
+            }
+        },
+        "manufacturer" : {
+            "type" : "text",
+            "analyzer": "korean",
+            "fields": {
+              "raw": {
+                "type":  "keyword"
+              }
+            },
+            "boost": 5
+        },
+        "image" : {
+          "type" : "keyword"
+        },
+        "content" : {
+          "type" : "keyword"
+        },
+        "reg_date" : {
+          "type" : "date"
+        }
+      }
+    }
+  }
+}
+
+아리랑
+{
+    "template" : "product*",
+    "settings" : {
+        "index":{
+          "analysis":{
+            "analyzer":{
+              "korean":{
+                "type":"custom",
+                "char_filter" :  ["html_strip"],
+                "tokenizer":"arirang_tokenizer",
+                "filter" : ["arirang_filter","lowercase","my_synonym","my_stop"]
+              }
+            },
+            "filter" : {
+                "my_synonym" : {
+                    "type" : "synonym",
+                    "synonyms_path" : "analysis/synonym.txt"
+                },
+                "my_stop" : {
+                    "type" : "stop",
+                    "stopwords_path" : "analysis/stopword.txt"
+                }
+            }
+          }
+        }
+      },
+      "mappings": {
+        "item": {
+          "_all": {
+             "enabled": false
+          },
+          "properties": {
+            "product_name": {
+              "type" : "text",
+              "analyzer": "korean",
+              "fields": {
+                    "raw": {
+                        "type":  "keyword"
+                    }
+                }
+            },
+            "price" : {
+              "type" : "integer"
+            },
+            "category": {
+              "type" : "text",
+              "analyzer": "korean",
+              "fields": {
+                  "raw": {
+                    "type":  "keyword"
+                  }
+                }
+            },
+            "manufacturer" : {
+                "type" : "text",
+                "analyzer": "korean",
+                "fields": {
+                  "raw": {
+                    "type":  "keyword"
+                  }
+                },
+                "boost": 5
+            },
+            "image" : {
+              "type" : "keyword"
+            },
+            "content" : {
+              "type" : "text",
+              "analyzer": "korean",
+              "fields": {
+                "raw": {
+                  "type":  "keyword"
+                }
+              }
+            },
+            "reg_date" : {
+              "type" : "date"
+            }
+          }
+        }
+      }
+}
+
+
+
+5. 색인
+logstash   product.conf 파일 참조
+
+
+6. 검색 테스트
+
+TERM 쿼리
+{
+  "explain": true,
+  "query": {
+    "term": {
+      "product_name": "컬쳐랜드문화상품권"
+    }
+  }
+}
+
+
+{
+  "explain": true,
+  "query": {
+    "term": {
+      "product_name.raw": "컬쳐랜드문화상품권"
+    }
+  }
+}
+
+{
+  "explain": true,
+  "query": {
+    "term": {
+      "product_name.raw": "[투썸플레이스] (투썸플레이스) 아메리카노 (R)"
+    }
+  }
+}
+
+다중 TERM 쿼리
+{
+    "query" : {
+        "terms" : {
+            "product_name" : ["여름","신상"]
+        }
+    }
+}
+
+
+
+MATCH 쿼리
+{
+  "explain": true,
+  "query": {
+    "match": {
+        "product_name" : {
+            "query": "아메리카노 투썸플레이스",
+            "operator" : "and"
+        }
+    }
+  }
+}
+and or 로 바꾸면서 하기
+
+
+{
+    "query" : {
+        "match_phrase" : {
+            "product_name" : {
+                "query": "여름 모음",
+                "slop": 2
+            }
+        }
+    }
+}
+
+MULTI MATCH  쿼리
+
+{
+  "explain": true,
+  "query": {
+    "multi_match" : {
+      "query":      "신발",
+      "fields":     [ "product_name", "category" ],
+      "tie_breaker": 0
+    }
+  }
+}
+
+
+
+QUERYSTRING 쿼리
+{
+    "query": {
+        "query_string" : {
+            "fields" : ["product_name^10", "manufacturer"],
+            "query" : "한글^20 AND 뉴패드"
+        }
+    }
+}
+
+{
+    "query": {
+        "query_string" : {
+            "default_field" : "product_name",
+            "query" : "category:도서음반 AND 한글"
+        }
+    }
+}
+
+{
+    "query": {
+        "query_string" : {
+            "default_field" : "product_name",
+            "query" : "category:도서음반 OR 한글",
+            "minimum_should_match" : 1
+        }
+    }
+}
+
+{
+    "query": {
+        "query_string" : {
+            "default_field" : "product_name",
+            "query" : "\"EBS 영상\"~10",
+            "minimum_should_match" : 1
+        }
+    }
+}
+
+BOOL 쿼리
+{
+  "query": {
+    "bool": {
+      "must": [
+        { "match": { "product_name": "여름" } }
+      ],
+      "must_not": [
+        { "match": { "category": "여성의류" } }
+      ]
+    }
+  }
+}
+
+{
+  "query": {
+    "bool" : {
+      "must" : {
+        "match" : { "product_name" : "단화" }
+      },
+      "filter": {
+        "match" : { "manufacturer" : "페이퍼플레인" }
+      },
+      "must_not" : {
+        "range" : {
+          "price" : { "gte" : 1000, "lte" : 2000 }
+        }
+      },
+      "should" : [
+        { "match" : { "product_name" : "스니커즈" } },
+        { "match" : { "category" : "로퍼" } }
+      ],
+      "minimum_should_match" : 1,
+      "boost" : 1.0
+    }
+  }
+}
+
+
+
+
+7 Geo Spatial 쿼리 실습
+
+PUT /geo_example
+{
+    "mappings": {
+        "_doc": {
+            "properties": {
+                "location": {
+                    "type": "geo_shape"
+                }
+            }
+        }
+    }
+}
+
+POST /geo_example/_doc?refresh
+{
+    "name": "Wind & Wetter, Berlin, Germany",
+    "location": {
+        "type": "point",
+        "coordinates": [13.400544, 52.530286]
+    }
+}
+
+GET /example/_search
+{
+    "query":{
+        "bool": {
+            "must": {
+                "match_all": {}
+            },
+            "filter": {
+                "geo_shape": {
+                    "location": {
+                        "shape": {
+                            "type": "envelope",
+                            "coordinates" : [[13.0, 53.0], [14.0, 52.0]]
+                        },
+                        "relation": "within"
+                    }
+                }
+            }
+        }
+    }
+}
+
+
+
+7. NESTED 쿼리(중첩쿼리) 실습
+
+1) 중첩 매핑 설정
+
+PUT nested_index/
+{
+  "mappings": {
+    "nested_type": {
+      "properties": {
+        "user": {
+          "type": "nested",
+          "properties" : {
+            "first" : { "type" : "text" },
+            "last" : { "type" : "text" }
+          }
+        }
+      }
+    }
+  }
+}
+
+2) 데이터 입력
+PUT nested_index/nested_type/1
+{
+  "group" : "fans",
+  "user" : [
+    {
+      "first" : "John",
+      "last" :  "Smith"
+    },
+    {
+      "first" : "Alice",
+      "last" :  "White"
+    }
+  ]
+}
+
+3) 중첩 쿼리
+POST nested_index/_search
+{
+  "query": {
+    "nested": {
+      "path": "user",
+      "query": {
+        "bool": {
+          "must": [
+            { "match": { "user.first": "Alice" }},
+            { "match": { "user.last":  "Smith" }}
+          ]
+        }
+      }
+    }
+  }
+}
+
+Cross Object 현상이 일어나지 않음을 확인
+
+
+
+8. join query 실습
+1) 데이터 매핑
+PUT joined_index
+{
+  "mappings": {
+    "doc": {
+      "properties": {
+        "my_join_field": {
+          "type": "join",
+          "relations": {
+            "question": "answer"
+          }
+        }
+      }
+    }
+  }
+}
+
+
+
+2) 부모 데이터 입력
+
+PUT joined_index/doc/1?routing=111
+{
+  "text": "This is a question",
+  "my_join_field": "question"
+}
+
+PUT joined_index/doc/2?routing=111
+{
+  "text": "This is another question",
+  "my_join_field": "question"
+}
+
+3) 자식 데이터 입력
+PUT joined_index/doc/3?routing=111
+{
+  "text": "This is an answer",
+  "my_join_field": {
+    "name": "answer",
+    "parent": "1"
+  }
+}
+
+PUT joined_index/doc/4?routing=111
+{
+  "text": "This is another answer",
+  "my_join_field": {
+    "name": "answer",
+    "parent": "1"
+  }
+}
+
+
+has_parent  쿼리
+{
+  "query": {
+    "has_parent": {
+      "parent_type": "question",
+      "query": {
+        "match": {
+          "text":"question"
+        }
+      }
+    }
+  }
+}
+
+answer를 결과로 리턴됨을 확인
+
+{
+  "query": {
+    "has_child": {
+      "type": "answer",
+      "query": {
+        "match": {
+          "text":"answer"
+        }
+      }
+    }
+  }
+}
+
+parent를 결과로 리턴함을 확인
+
+
+9. Function Query
+
+{
+    "query": {
+        "function_score": {
+            "query": {
+                "match": { "product_name": "신발" }
+            },
+            "script_score" : {
+                "script" : {
+                  "inline": "Math.log(2 + doc['price'].value)"
+                }
+            }
+        }
+    }
+}
+
+
+{
+    "query": {
+        "function_score": {
+            "field_value_factor": {
+                "field": "price",
+                "factor": 1.2,
+                "modifier": "sqrt",
+                "missing": 1
+            }
+        }
+    }
+}
+
+
+10. SPAN 쿼리 (근접 연산자 쿼리)
+
+(A NEAR (B OR C*) NEAR D
+(A NEAR B) OR (A NEAR C*)
+
+
+
+{
+    "query": {
+        "span_near" : {
+            "clauses" : [
+                { "span_term" : { "product_name" : "운동화" } },
+                { "span_term" : { "product_name" : "플랫" } },
+                { "span_term" : { "product_name" : "단화" } }
+            ],
+            "slop" : 12,
+            "in_order" : false
+        }
+    }
+}
+
+
+{
+    "query": {
+        "span_containing" : {
+            "little" : {
+                "span_term" : { "product_name" : "스니커즈" }
+            },
+            "big" : {
+                "span_near" : {
+                    "clauses" : [
+                        { "span_term" : { "product_name" : "신발" } },
+                        { "span_term" : { "product_name" : "운동화" } }
+                    ],
+                    "slop" : 5,
+                    "in_order" : true
+                }
+            }
+        }
+    }
+}
+
+
+{
+    "query": {
+        "span_within" : {
+            "little" : {
+                "span_term" : { "product_name" : "스니커즈" }
+            },
+            "big" : {
+                "span_near" : {
+                    "clauses" : [
+                        { "span_term" : { "product_name" : "신발" } },
+                        { "span_term" : { "product_name" : "운동화" } }
+                    ],
+                    "slop" : 5,
+                    "in_order" : true
+                }
+            }
+        }
+    }
+}
+
+
+문제1 : (A NEAR (B OR C*) NEAR D
+
+-PUT span_test
+{
+    "mappings": {
+      "test": {
+        "properties": {
+          "title": {
+            "type": "text",
+            "fields": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            },
+            "index_options": "offsets"
+          }
+        }
+      }
+    }
+}
+
+PUT span_test
+{
+    "title" : "A 11 B"
+}
+PUT span_test
+{
+    "title" : "A 11 C"
+}
+PUT span_test
+{
+    "title" : "A 11 C1"
+}
+PUT span_test
+{
+    "title" : "A 11 B 11 D"
+}
+PUT span_test
+{
+    "title" : "A 11 C 11 D"
+}
+PUT span_test
+{
+    "title" : "A 11 C1 11 D"
+}
+
+{
+  "query": {
+    "span_near": {
+      "clauses": [
+        {
+          "span_near": {
+            "clauses": [
+              {
+                "span_term": {
+                  "title": "a"
+                }
+              },
+              {
+                "span_or": {
+                  "clauses": [
+                    {
+                      "span_term": {
+                        "title": "b"
+                      }
+                    },
+                    {
+                      "span_multi": {
+                        "match": {
+                          "prefix": {
+                            "title": "c"
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            ],
+            "slop": 12
+          }
+        },
+        {
+          "span_term": {
+            "title": "d"
+          }
+        }
+      ],
+      "slop": 12
+    }
+  }
+}
+
+
+문제2  : (A NEAR B) OR (A NEAR C*)
+
+{
+  "query": {
+    "span_or": {
+      "clauses": [
+        {
+          "span_near": {
+            "clauses": [
+              {
+                "span_term": {
+                  "title": "a"
+                }
+              },
+              {
+                "span_term": {
+                  "title": "b"
+                }
+              }
+            ],
+            "slop": 12
+          }
+        },
+        {
+          "span_near": {
+            "clauses": [
+              {
+                "span_term": {
+                  "title": "a"
+                }
+              },
+              {
+                "span_multi": {
+                  "match": {
+                    "prefix": {
+                      "title": "c"
+                    }
+                  }
+                }
+              }
+            ],
+            "slop": 12
+          }
+        }
+      ]
+    }
+  }
+}
+
+10. 자동완성 질의 예제
+
+
+매핑
+PUT autocomplete
+{
+  "settings": {
+    "index": {
+      "analysis": {
+        "analyzer": {
+          "my-index-edge-jaso": {
+            "type": "custom",
+            "tokenizer": "keyword",
+            "filter": [
+              "my-jaso-filter",
+              "edge_filter"
+            ]
+          },
+          "my-index-full-jaso": {
+            "type": "custom",
+            "tokenizer": "keyword",
+            "filter": [
+              "edge_reverse_filter",
+              "my-jaso-filter",
+              "edge_filter"
+            ]
+          },
+          "my-search-jaso": {
+            "type": "custom",
+            "tokenizer": "keyword",
+            "filter": [
+              "my-jaso-filter"
+            ]
+          }
+        },
+        "filter": {
+          "my-jaso-filter": {
+            "type": "qj-analyzer-filter",
+            "tokenizer": "keyword",
+            "mode": "simple_jaso",
+            "jaso_typo": true
+          },
+          "edge_filter": {
+            "type": "edge_ngram",
+            "min_gram": 1,
+            "max_gram": 10,
+            "token_chars": [
+              "letter",
+              "digit"
+            ]
+          },
+          "edge_reverse_filter": {
+            "type": "edge_ngram",
+            "min_gram": 1,
+            "max_gram": 10,
+            "side": "back",
+            "token_chars": [
+              "letter",
+              "digit"
+            ]
+          }
+        }
+      }
+    }
+  },
+  "mappings": {
+    "item": {
+      "properties": {
+        "auto_keyword": {
+          "type": "keyword",
+          "fields": {
+            "raw": {
+              "type": "keyword"
+            },
+            "spell_edge": {
+              "type": "text",
+              "analyzer": "my-index-edge-jaso",
+              "search_analyzer": "my-search-jaso"
+            },
+            "spell_full": {
+              "type": "text",
+              "analyzer": "my-index-full-jaso",
+              "search_analyzer": "my-search-jaso"
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+데이터 입력
+PUT autocomplete/item/1
+{
+  "auto_keyword": "엘지전자"
+}
+PUT autocomplete/item/2
+{
+  "auto_keyword": "전자금융"
+}
+
+데이터 검색
+{
+  "explain": true,
+  "query": {
+    "query_string": {
+      "fields": [
+        "auto_keyword.spell_edge^10"
+      ],
+      "query": "엘"
+    }
+  }
+}
+
+{
+  "explain": false,
+  "query": {
+    "query_string": {
+      "fields": [
+        "auto_keyword.spell_edge^10","auto_keyword.spell_full^40"
+      ],
+      "query": "전자"
+    }
+  }
+}
