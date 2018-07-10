@@ -1,0 +1,223 @@
+1. E/S 다운로드
+wget https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-6.1.3.tar.gz
+
+2. 압축 풀기
+tar zxvf elasticsearch-6.1.3.tar.gz
+
+
+3. 설정 파일 수정
+vi config/elasticsearch.yml
+http.host: 0.0.0.0 추가
+
+4. 자바 힙메모리 수정
+vi config/jvm.options
+-mx = 1g
+-mx = 1g
+
+5. 플러그인 설치
+
+스펠체커를 위한 플러그인
+bin/elasticsearch-plugin install analysis-icu
+
+한글 형태소분석기 (은전한닢)
+bash <(curl -s https://bitbucket.org/eunjeon/seunjeon/raw/master/elasticsearch/scripts/downloader.sh) -e 6.1.3 -p 6.1.1.0
+./bin/elasticsearch-plugin install file://`pwd`/elasticsearch-analysis-seunjeon-6.1.1.0.zip
+
+자동완성용 플러그인 (자체개발)
+wget http://gofile.me/32vUe/xBYiBuzfL
+
+
+
+PUT _template/store
+{
+    "template" : "store*",
+    "settings" : {
+     "index":{
+       "analysis":{
+         "analyzer":{
+           "korean":{
+             "type":"custom",
+             "tokenizer":"seunjeon_default_tokenizer"
+           },
+          "nfd_normalized": {
+            "tokenizer": "standard",
+            "char_filter": [
+              "nfd_normalizer"
+            ]
+          },
+          "my-index-edge-jaso":{
+            "type":"custom",
+            "tokenizer":"keyword",
+            "filter":["my-jaso-filter","edge_filter"]
+          },
+          "my-index-full-jaso":{
+            "type":"custom",
+            "tokenizer":"keyword",
+            "filter":["edge_reverse_filter","my-jaso-filter","edge_filter"]
+          },
+         "my-search-jaso":{
+            "type":"custom",
+            "tokenizer":"keyword",
+            "filter":["my-jaso-filter"]
+          }
+         },
+         "tokenizer": {
+           "seunjeon_default_tokenizer": {
+             "type": "seunjeon_tokenizer",
+             "index_eojeol": false,
+             "user_words": ["낄끼+빠빠,-100", "c\\+\\+", "어그로", "버카충", "abc마트"]
+           }
+         },
+        "char_filter": {
+          "nfd_normalizer": {
+            "type": "icu_normalizer",
+            "name": "nfc",
+            "mode": "decompose"
+          }
+        },
+        "filter" : {
+            "my-jaso-filter" : {
+                "type" : "qj-analyzer-filter",
+                "tokenizer": "keyword",
+                "mode":"simple_jaso",
+                "jaso_typo" : true
+            },
+            "edge_filter": {
+              "type": "edge_ngram",
+              "min_gram": 1,
+              "max_gram": 10,
+              "token_chars": [
+                "letter",
+                "digit"
+              ]
+            },
+            "edge_reverse_filter": {
+              "type": "edge_ngram",
+              "min_gram": 1,
+              "max_gram": 10,
+              "side" : "back",
+              "token_chars": [
+                "letter",
+                "digit"
+              ]
+            }
+        }
+       }
+     }
+   },
+    "mappings": {
+      "item":
+      {
+      "properties": {
+          "address": {
+              "type": "text",
+              "fields": {
+                  "keyword": {
+                      "type": "keyword",
+                      "ignore_above": 256
+                  }
+              }
+          },
+          "category": {
+              "type": "text",
+              "fields": {
+                  "keyword": {
+                      "type": "keyword",
+                      "ignore_above": 256
+                  }
+              }
+          },
+          "category1": {
+              "type": "text",
+              "fields": {
+                  "keyword": {
+                      "type": "keyword",
+                      "ignore_above": 256
+                  }
+              }
+          },
+          "category2": {
+              "type": "text",
+              "fields": {
+                  "keyword": {
+                      "type": "keyword",
+                      "ignore_above": 256
+                  }
+              }
+          },
+          "description": {
+              "type": "text",
+              "analyzer": "korean",
+              "fields": {
+                  "keyword": {
+                      "type": "keyword",
+                      "ignore_above": 256
+                  }
+              }
+          },
+          "region": {
+              "type": "keyword"
+          },
+          "idx": {
+              "type": "long"
+          },
+          "lat": {
+              "type": "float"
+          },
+          "link": {
+              "type": "keyword"
+          },
+          "lng": {
+              "type": "float"
+          },
+          "location": {
+              "type": "geo_point"
+          },
+          "rate": {
+              "type": "long"
+          },
+          "roadaddress": {
+              "type": "text",
+              "analyzer": "korean",
+              "fields": {
+                  "keyword": {
+                      "type": "keyword",
+                      "ignore_above": 256
+                  }
+              }
+          },
+          "telephone": {
+              "type": "text",
+              "fields": {
+                  "keyword": {
+                      "type": "keyword",
+                      "ignore_above": 256
+                  }
+              }
+          },
+          "title": {
+              "type": "text",
+              "analyzer": "korean",
+              "fields": {
+                  "keyword": {
+                      "type": "keyword",
+                      "ignore_above": 256
+                  },
+                  "spells": {
+                      "type": "text",
+                      "fielddata":"true",
+                      "analyzer": "nfd_normalized"
+                  },
+                  "auto": {
+                      "type": "text",
+                      "fielddata":"true",
+                      "analyzer": "my-index-edge-jaso",
+                      "search_analyzer": "my-search-jaso"
+                  }
+
+              }
+          }
+          }
+      }
+    }
+}
