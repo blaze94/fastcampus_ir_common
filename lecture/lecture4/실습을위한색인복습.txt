@@ -318,4 +318,141 @@ output {
 
 
 
+------------------------------------------------------------------------------------------------------------------------
+product 색인
 
+
+0. 아리랑 설치
+wget https://github.com/blaze94/fastcampus_ir_common/raw/master/lecture/lecture3/arirang-analyzer-es-plugin-6.1.3.zip
+bin/elasticsearch-plugin install file://`pwd`/arirang-analyzer-es-plugin-6.1.3.zip
+
+1. 동의어 불용어 사전 폴더 만들기
+
+mkdir config/analysis
+touch config/analysis/synonym.txt
+touch config/analysis/stopword.txt
+
+1. product  템플릿
+PUT _template/product
+{
+    "template" : "product*",
+    "settings" : {
+        "index":{
+          "analysis":{
+            "analyzer":{
+              "korean":{
+                "type":"custom",
+                "char_filter" :  ["html_strip"],
+                "tokenizer":"arirang_tokenizer",
+                "filter" : ["arirang_filter","lowercase","my_synonym","my_stop"]
+              }
+            },
+            "filter" : {
+                "my_synonym" : {
+                    "type" : "synonym",
+                    "synonyms_path" : "analysis/synonym.txt"
+                },
+                "my_stop" : {
+                    "type" : "stop",
+                    "stopwords_path" : "analysis/stopword.txt"
+                }
+            }
+          }
+        }
+      },
+      "mappings": {
+        "doc": {
+          "_all": {
+             "enabled": false
+          },
+          "properties": {
+            "product_name": {
+              "type" : "text",
+              "analyzer": "korean",
+              "fields": {
+                    "raw": {
+                        "type":  "keyword"
+                    }
+                }
+            },
+            "price" : {
+              "type" : "integer"
+            },
+            "category": {
+              "type" : "text",
+              "analyzer": "korean",
+              "fields": {
+                  "raw": {
+                    "type":  "keyword"
+                  }
+                }
+            },
+            "manufacturer" : {
+                "type" : "text",
+                "analyzer": "korean",
+                "fields": {
+                  "raw": {
+                    "type":  "keyword"
+                  }
+                },
+                "boost": 5
+            },
+            "image" : {
+              "type" : "keyword"
+            },
+            "content" : {
+              "type" : "text",
+              "analyzer": "korean",
+              "fields": {
+                "raw": {
+                  "type":  "keyword"
+                }
+              }
+            },
+            "reg_date" : {
+              "type" : "date"
+            }
+          }
+        }
+      }
+}
+
+2. product.conf 작성
+
+input {
+  jdbc {
+    jdbc_driver_library => "/home/ec2-user/logstash-6.1.3/mysql-connector-java-5.1.18.jar"
+    jdbc_driver_class => "com.mysql.jdbc.Driver"
+    jdbc_connection_string => "jdbc:mysql://svn.queryjet.net:23306/newsdb"
+    jdbc_user => "news_user"
+    jdbc_password => "news_user11"
+    statement => "SELECT * FROM Product"
+  }
+}
+
+#    WHERE id > :sql_last_value
+#    use_column_value => true
+#    tracking_column => id
+
+filter {
+    mutate {
+       remove_field => [  "@version", "@timestamp"]
+       convert => { "price" => "integer" }
+       gsub => [
+    	    "content", "<.*?>", ""
+       ]
+    }
+}
+
+
+output {
+  stdout {
+        codec => rubydebug
+    }
+  elasticsearch {
+    hosts => ["127.0.0.1:9200"]
+        index => "product"
+        manage_template => false
+        document_id => "%{id}"
+  }
+}

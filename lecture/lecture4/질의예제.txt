@@ -1,230 +1,6 @@
-1. 엘라스틱 서버 설치
-설치됨
+1. TERM 쿼리
 
-2. 엘라스틱 플러그인 설치
-은전한닢
-아리랑
-
-3. 데이터 확인
-jdbc_connection_string => "jdbc:mysql://svn.queryjet.net:23306/newsdb"
-jdbc_user => "news_user"
-jdbc_password => "news_user11"
-
-
-PRODUCT 테이블을 색인해 봅시다
-CREATE TABLE `Product` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `product_name` varchar(100) DEFAULT NULL,
-  `price` varchar(50) DEFAULT NULL,
-  `category` varchar(100) DEFAULT NULL,
-  `manufacturer` varchar(100) DEFAULT NULL,
-  `image` varchar(1000) DEFAULT NULL,
-  `content` varchar(20000) DEFAULT NULL,
-  `reg_date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `Product_id_uindex` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=1212 DEFAULT CHARSET=utf8;
-
-4. 매핑 설계
-
-
-/home/ec2-user/elasticsearch-6.1.3/config/analysis/synonym.txt
-/home/ec2-user/elasticsearch-6.1.3/config/analysis/stopword.txt
-
-PUT product
-{
-  "settings" : {
-    "index":{
-      "analysis":{
-        "analyzer":{
-          "korean":{
-            "type":"custom",
-            "char_filter" :  ["html_strip"],
-            "tokenizer":"seunjeon_tokenizer",
-            "filter" : ["lowercase","my_synonym","my_stop"]
-          },
-          "korean_noun": {
-            "type":"custom",
-            "char_filter" :  ["html_strip"],
-            "tokenizer":"noun_tokenizer",
-            "filter" : ["lowercase","my_synonym","my_stop"]
-          }
-        },
-        "tokenizer": {
-          "seunjeon_tokenizer": {
-            "type": "seunjeon_tokenizer",
-            "pos_tagging": false,
-            "user_words": ["낄끼빠빠,-100", "버카충"]
-          },
-          "noun_tokenizer": {
-            "type": "seunjeon_tokenizer",
-            "index_eojeol": false,
-            "pos_tagging": false,
-            "index_poses": ["N"]
-          }
-        },
-        "filter" : {
-            "my_synonym" : {
-                "type" : "synonym",
-                "synonyms_path" : "analysis/synonym.txt"
-            },
-            "my_stop" : {
-                "type" : "stop",
-                "stopwords_path" : "analysis/stopword.txt"
-            }
-        }
-      }
-    }
-  },
-  "mappings": {
-    "item": {
-      "_all": {
-        "enabled": false
-      },
-      "properties": {
-        "product_name": {
-          "type" : "text",
-          "analyzer": "korean",
-          "fields": {
-                "raw": {
-                    "type":  "keyword"
-                },
-                "noun": {
-                  "type":  "text",
-                  "analyzer": "korean_noun",
-                  "boost": 10
-                }
-            }
-        },
-        "price" : {
-          "type" : "integer"
-        },
-        "category": {
-          "type" : "text",
-          "analyzer": "korean",
-          "fields": {
-              "raw": {
-                "type":  "keyword"
-              }
-            }
-        },
-        "manufacturer" : {
-            "type" : "text",
-            "analyzer": "korean",
-            "fields": {
-              "raw": {
-                "type":  "keyword"
-              }
-            },
-            "boost": 5
-        },
-        "image" : {
-          "type" : "keyword"
-        },
-        "content" : {
-          "type" : "keyword"
-        },
-        "reg_date" : {
-          "type" : "date"
-        }
-      }
-    }
-  }
-}
-
-아리랑
-{
-    "template" : "product*",
-    "settings" : {
-        "index":{
-          "analysis":{
-            "analyzer":{
-              "korean":{
-                "type":"custom",
-                "char_filter" :  ["html_strip"],
-                "tokenizer":"arirang_tokenizer",
-                "filter" : ["arirang_filter","lowercase","my_synonym","my_stop"]
-              }
-            },
-            "filter" : {
-                "my_synonym" : {
-                    "type" : "synonym",
-                    "synonyms_path" : "analysis/synonym.txt"
-                },
-                "my_stop" : {
-                    "type" : "stop",
-                    "stopwords_path" : "analysis/stopword.txt"
-                }
-            }
-          }
-        }
-      },
-      "mappings": {
-        "item": {
-          "_all": {
-             "enabled": false
-          },
-          "properties": {
-            "product_name": {
-              "type" : "text",
-              "analyzer": "korean",
-              "fields": {
-                    "raw": {
-                        "type":  "keyword"
-                    }
-                }
-            },
-            "price" : {
-              "type" : "integer"
-            },
-            "category": {
-              "type" : "text",
-              "analyzer": "korean",
-              "fields": {
-                  "raw": {
-                    "type":  "keyword"
-                  }
-                }
-            },
-            "manufacturer" : {
-                "type" : "text",
-                "analyzer": "korean",
-                "fields": {
-                  "raw": {
-                    "type":  "keyword"
-                  }
-                },
-                "boost": 5
-            },
-            "image" : {
-              "type" : "keyword"
-            },
-            "content" : {
-              "type" : "text",
-              "analyzer": "korean",
-              "fields": {
-                "raw": {
-                  "type":  "keyword"
-                }
-              }
-            },
-            "reg_date" : {
-              "type" : "date"
-            }
-          }
-        }
-      }
-}
-
-
-
-5. 색인
-logstash   product.conf 파일 참조
-
-
-6. 검색 테스트
-
-TERM 쿼리
+POST product/_search
 {
   "explain": true,
   "query": {
@@ -233,7 +9,6 @@ TERM 쿼리
     }
   }
 }
-
 
 {
   "explain": true,
@@ -253,7 +28,9 @@ TERM 쿼리
   }
 }
 
-다중 TERM 쿼리
+2. 다중 TERM 쿼리
+POST product/_search
+
 {
     "query" : {
         "terms" : {
@@ -264,7 +41,9 @@ TERM 쿼리
 
 
 
-MATCH 쿼리
+3. MATCH 쿼리
+POST product/_search
+
 {
   "explain": true,
   "query": {
@@ -290,7 +69,8 @@ and or 로 바꾸면서 하기
     }
 }
 
-MULTI MATCH  쿼리
+4. MULTI MATCH  쿼리
+POST product/_search
 
 {
   "explain": true,
@@ -305,7 +85,8 @@ MULTI MATCH  쿼리
 
 
 
-QUERYSTRING 쿼리
+5. QUERYSTRING 쿼리
+POST product/_search
 {
     "query": {
         "query_string" : {
@@ -344,7 +125,8 @@ QUERYSTRING 쿼리
     }
 }
 
-BOOL 쿼리
+6. BOOL 쿼리
+POST product/_search
 {
   "query": {
     "bool": {
@@ -431,12 +213,30 @@ GET /example/_search
     }
 }
 
+POST store/_search
+{
+    "query": {
+        "bool" : {
+            "must" : {
+                "match_all" : {}
+            },
+            "filter" : {
+                "geo_distance" : {
+                    "distance" : "1km",
+                    "location" : {
+                        "lat" : 37.560506368020725,
+                        "lon" : 126.96365959656013
+                    }
+                }
+            }
+        }
+    }
+}
 
 
-7. NESTED 쿼리(중첩쿼리) 실습
+8. NESTED 쿼리(중첩쿼리) 실습
 
 1) 중첩 매핑 설정
-
 PUT nested_index/
 {
   "mappings": {
@@ -492,7 +292,7 @@ Cross Object 현상이 일어나지 않음을 확인
 
 
 
-8. join query 실습
+9. join query 실습
 1) 데이터 매핑
 PUT joined_index
 {
@@ -578,7 +378,7 @@ answer를 결과로 리턴됨을 확인
 parent를 결과로 리턴함을 확인
 
 
-9. Function Query
+10. Function Query
 
 {
     "query": {
@@ -610,7 +410,7 @@ parent를 결과로 리턴함을 확인
 }
 
 
-10. SPAN 쿼리 (근접 연산자 쿼리)
+11. SPAN 쿼리 (근접 연산자 쿼리)
 
 (A NEAR (B OR C*) NEAR D
 (A NEAR B) OR (A NEAR C*)
@@ -818,7 +618,7 @@ PUT span_test
   }
 }
 
-10. 자동완성 질의 예제
+11. 자동완성 질의 예제
 
 
 매핑
