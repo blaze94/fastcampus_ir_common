@@ -17,7 +17,7 @@
 #>cd mecab-ko-dic-2.0.1-20150920
 #>./configure --with-charset=utf-8
 #>make
-#>make install
+#>sudo make install
 
 
 4)테스트
@@ -25,9 +25,29 @@
 #>/home/ec2-user/mecab-0.996-ko-0.9.2/mecab-ko-dic-2.0.1-20150920/tools/mecab-bestn.sh
 
 
+5)출현빈도 변경 실습
+
+#>vi user-dic/nnp.csv
+네네,,,,NNP,*,F,네네,*,*,*,*,*  추가
 
 
+#) 사전태그 형식 확인
+https://docs.google.com/spreadsheets/d/1-9blXKjtjeKZqsf4NzHeYJCrr49-nXeRF6D80udfcwY/edit#gid=6
 
+#>tools/add-userdic.sh  실행
+
+#>user-nnp.csv 파일 확인 출현비용 낮춤
+네네,1786,3540,-100,NNP,*,F,네네,*,*,*,*,*
+
+혹은
+네네치킨,,,,NNG+NNG,*,T,네네치킨,Preanalysis,NNG,NNG,네네/NNG/*+치킨/NNG/*
+네네치킨,,,,NNP,*,T,네네치킨,Compound,*,*,네네+치킨,네네/NNG/*/1/1+>네네치킨/Compound/*/0/2+ㄴ치킨/NNG/*/1/1
+
+#>make clean all
+
+확인
+#>/home/ec2-user/mecab-0.996-ko-0.9.2/mecab-ko-dic-2.0.1-20150920/tools/mecab-bestn.sh
+네네치킨
 
 
 5)자바 설치
