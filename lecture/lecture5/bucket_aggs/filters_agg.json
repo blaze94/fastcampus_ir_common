@@ -1,0 +1,13 @@
+POST store/_search
+
+{
+  "size" : 0,
+  "aggs" : {
+    "region_filter" : {
+      "filter" : { "term": { "region": "전라북도" } },
+      "aggs" : {
+        "avg_rate" : { "avg" : { "field" : "rate" } }
+      }
+    }
+  }
+}

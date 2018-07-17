@@ -1,0 +1,123 @@
+
+POST store/_search
+
+{
+	"size" : 0,
+	"aggs" : {
+		"category_agg" : {
+			"terms" : {
+				"field" : "category.keyword",
+				"shard_size": 200,
+				"missing": "N/A"
+			}
+		}
+	}
+}
+
+{
+	"size": 0,
+	"query": {
+		"bool": {
+			"must_not": {
+				"exists": {
+					"field": "category.keyword"
+				}
+			}
+		}
+	},
+	"aggs": {
+		"category_agg": {
+			"terms": {
+				"field": "category.keyword",
+				"shard_size": 200
+			}
+		}
+	}
+}
+
+{
+	"size": 0,
+	"query": {
+		"bool": {
+			"must_not": {
+				"term": {
+					"category.keyword": ""
+				}
+			}
+		}
+	},
+	"aggs": {
+		"category_agg": {
+			"terms": {
+				"field": "category.keyword",
+				"shard_size": 200
+			}
+		}
+	}
+}
+
+
+
+{
+	"size": 0,
+	"aggs": {
+		"category_agg": {
+			"terms": {
+				"field": "category.keyword",
+				"shard_size": 200,
+				"exclude" : ""
+			}
+		}
+	}
+}
+
+계층구조 aggs
+{
+	"size": 0,
+	"aggs": {
+		"category1_agg": {
+			"terms": {
+				"field": "category1.keyword",
+				"shard_size": 200,
+				"exclude" : "",
+				"order" : { "_count" : "asc" }
+			},
+			"aggs": {
+				"category2_agg": {
+					"terms": {
+						"field": "category2.keyword"
+					}
+				}
+			}
+		}
+	}
+}
+
+정렬 기준
+"order" : { "_key" : "asc" }
+
+특정한 계산된 값을 정렬 기준으로 삼고 싶다면?
+
+{
+	"size": 1,
+		"aggs": {
+			"category1_agg": {
+			"terms": {
+				"field": "category1.keyword",
+				"shard_size": 200,
+				"exclude" : "",
+				"order" : { "rate_stats.avg" : "desc" }
+			},
+			"aggs": {
+				"category2_agg": {
+					"terms": {
+						"field": "category2.keyword"
+					}
+				},
+				"rate_stats" : { "stats" : { "field" : "rate" } }
+			}
+		}
+	}
+}
+
+

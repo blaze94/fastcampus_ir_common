@@ -1,0 +1,21 @@
+POST store/_search
+
+{
+  "size": 0,
+  "aggs" : {
+    "rings_around_amsterdam" : {
+      "geo_distance" : {
+        "field" : "location",
+        "origin" : "35.16154901783304, 129.163422950361",
+        "unit" : "km",
+        "distance_type" : "plane",
+        "ranges" : [
+          { "to" : 100, "key": "first_ring" },
+          { "from" : 100, "to" : 300, "key": "second_ring" },
+          { "from" : 300, "key": "third_ring" }
+        ],
+        "keyed": true
+      }
+    }
+  }
+}

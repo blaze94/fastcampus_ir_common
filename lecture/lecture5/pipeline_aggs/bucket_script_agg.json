@@ -1,0 +1,41 @@
+{
+  "size": 0,
+  "aggs" : {
+    "sales_per_year" : {
+      "date_histogram" : {
+        "field" : "reg_date",
+        "interval" : "year"
+      },
+      "aggs": {
+        "total_sales": {
+          "sum": {
+            "field": "price"
+          }
+        },
+        "koopu-filter": {
+          "filter": {
+            "term": {
+              "manufacturer": "쿠프마케팅"
+            }
+          },
+          "aggs": {
+            "sales": {
+              "sum": {
+                "field": "price"
+              }
+            }
+          }
+        },
+        "koopu-percentage": {
+          "bucket_script": {
+            "buckets_path": {
+              "petSales": "koopu-filter>sales",
+              "totalSales": "total_sales"
+            },
+            "script": "params.petSales / params.totalSales * 100"
+          }
+        }
+      }
+    }
+  }
+}
