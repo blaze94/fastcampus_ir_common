@@ -1,0 +1,10 @@
+{
+  "size": 0,
+  "aggs" : {
+    "price_outlier" : {
+      "percentiles" : {
+        "field" : "price"
+      }
+    }
+  }
+}

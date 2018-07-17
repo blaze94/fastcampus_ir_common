@@ -1,3 +1,5 @@
+POST product/_search
+
 {
   "query" : {
     "match" : { "region" : "서울특별시" }

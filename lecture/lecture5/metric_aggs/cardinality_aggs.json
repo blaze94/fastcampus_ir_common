@@ -1,0 +1,11 @@
+{
+  "size": 0,
+  "aggs" : {
+    "type_count" : {
+      "cardinality" : {
+        "field" : "manufacturer.raw",
+        "precision_threshold": 100
+      }
+    }
+  }
+}
