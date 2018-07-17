@@ -1,0 +1,51 @@
+PUT nested_index
+{
+  "mappings": {
+    "nested_type": {
+      "properties": {
+        "user": {
+          "type": "nested",
+          "properties" : {
+            "first" : { "type" : "text" },
+            "last" : { "type" : "text" },
+            "age" : { "type" : "long" }
+          }
+        }
+      }
+    }
+  }
+}
+
+PUT nested_index/nested_type/1
+{
+  "group": "fans",
+  "user": [
+    {
+      "first": "John",
+      "last": "Smith",
+      "age": "20"
+    },
+    {
+      "first": "Alice",
+      "last": "White",
+      "age": "25"
+    }
+  ]
+}
+
+POST  nested_index/_search
+{
+  "size": 0,
+  "aggs" : {
+    "resellers" : {
+      "nested" : {
+        "path" : "user"
+      },
+      "aggs" : {
+        "min_price" : { "min" : { "field" : "user.age" } }
+      }
+    }
+  }
+}
+
+
