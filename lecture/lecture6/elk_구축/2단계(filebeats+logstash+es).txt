@@ -1,0 +1,88 @@
+
+1. 파일비트 설정 수정
+vi filebeat.yml
+
+- type: log
+  enabled: true
+  paths:
+    - /var/log/nginx/access.log
+  fields:
+    log_type: access
+- type: log
+  enabled: true
+  paths:
+    - /var/log/nginx/error.log
+  fields:
+    log_type: error
+
+
+  output.logstash:
+    # The Logstash hosts
+    hosts: ["localhost:5044"]
+
+
+2. 로그스태쉬 설치
+wget https://artifacts.elastic.co/downloads/logstash/logstash-6.3.1.tar.gz
+
+tar zxvf logstash-6.3.1.tar.gz
+cd logstash-6.3.1
+
+3. 로그스태쉬 설정 파일 생성
+
+vi nginx_with_beat.conf
+input {
+    beats {
+        port => "5044"
+    }
+}
+filter {
+        grok {
+                match => { "message" => "%{COMBINEDAPACHELOG}" }
+        }
+        geoip {
+                source => "clientip"
+        }
+}
+output {
+  elasticsearch{
+    hosts => ["127.0.0.1:9200"]
+    index => "nginx_log_beat"
+    document_type => "log"
+  }
+  stdout {}
+}
+
+날짜별 저장
+index => "%{[@metadata][beat]}-%{+YYYY.MM.dd}"
+document_type => "%{[@metadata][type]}"
+
+**로그스태쉬 단독으로 사용
+
+vi nginx.conf
+input {
+        file {
+                path => "/var/log/nginx/access.log"
+                start_position => beginning
+        }
+}
+
+filter {
+        grok {
+                match => { "message" => "%{COMBINEDAPACHELOG}" }
+        }
+        geoip {
+                source => "clientip"
+        }
+}
+output {
+  elasticsearch{
+    hosts => ["127.0.0.1:9200"]
+    index => "nginx_log"
+    document_type => "log"
+  }
+  stdout {}
+}
+
+3. 파일 비트 실행
+./filebeat -e -c filebeat.yml
+

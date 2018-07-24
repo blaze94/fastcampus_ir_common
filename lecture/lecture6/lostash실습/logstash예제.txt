@@ -1,0 +1,230 @@
+실습1 : syslog 파싱 하기
+"4 5 23 Dec 18 12:37:06 2000 IDC_HP_A5500 %%10SHELL/5/SHELL_LOGOUT(l): -DevIP=192.168.1.1; admin logged out from 192.168.143.55."
+
+grok 패턴으로
+
+
+날짜
+아이피
+기타 데이터를 파싱
+
+^%{NUMBER:target} %{NUMBER:rank} %{NUMBER:priority} %{SYSLOGTIMESTAMP:regDate} %{NUMBER:num} %{WORD:reg_key} %{DATA:aaa} -DevIP=%{IP:ip};%{GREEDYDATA:action}
+
+
+
+실습2 : 구분자로 나누기
+
+filter {
+    mutate {
+       split => { "category" => ">" }
+       add_field => {
+        "category1" => "%{[category][0]}"
+        "category2" => "%{[category][1]}"
+       }
+       split => { "address" => " " }
+       add_field => {
+	    "region" => "%{[address][0]}"
+       }
+       remove_field => [  "@version", "@timestamp"]
+       add_field => {
+        "location" => ["%{lat},%{lng}"]
+       }
+    }
+}
+
+
+
+
+실습3 : logstash-aggregation-filter 사용
+
+bin/logstash-plugin install logstash-filter-aggregate
+설치(자바 7로 설치)
+
+
+로그스태쉬 설정
+
+1) START와 END가 있는경우
+input { stdin { } }
+
+filter {
+   grok {
+     match => [ "message", "%{LOGLEVEL:loglevel} - %{NOTSPACE:taskid} - %{NOTSPACE:logger} - %{WORD:label}( - %{INT:duration:int})?" ]
+   }
+
+   if [logger] == "TASK_START" {
+     aggregate {
+       task_id => "%{taskid}"
+       code => "map['sql_duration'] = 0"
+       map_action => "create"
+     }
+   }
+
+   if [logger] == "SQL" {
+     aggregate {
+       task_id => "%{taskid}"
+       code => "map['sql_duration'] += event.get('duration')"
+       map_action => "update"
+     }
+   }
+
+   if [logger] == "TASK_END" {
+     aggregate {
+       task_id => "%{taskid}"
+       code => "event.set('sql_duration', map['sql_duration'])"
+       map_action => "update"
+       end_of_task => true
+       timeout => 120
+     }
+   }
+ }
+ output {
+   stdout {
+         codec => rubydebug
+     }
+   elasticsearch {
+     hosts => ["127.0.0.1:9200"]
+           index => "test"
+   }
+ }
+데이터 입력
+ INFO - 12345 - TASK_START - start
+ INFO - 12345 - SQL - sqlQuery1 - 12
+ INFO - 12345 - SQL - sqlQuery2 - 34
+ INFO - 12345 - TASK_END - end
+
+2) START가 없는 경우
+input { stdin { } }
+
+
+filter {
+   grok {
+     match => [ "message", "%{LOGLEVEL:loglevel} - %{NOTSPACE:taskid} - %{NOTSPACE:logger} - %{WORD:label}( - %{INT:duration:int})?" ]
+   }
+
+   if [logger] == "SQL" {
+     aggregate {
+       task_id => "%{taskid}"
+       code => "map['sql_duration'] ||= 0 ; map['sql_duration'] += event.get('duration')"
+     }
+   }
+
+   if [logger] == "TASK_END" {
+     aggregate {
+       task_id => "%{taskid}"
+       code => "event.set('sql_duration', map['sql_duration'])"
+       end_of_task => true
+       timeout => 120
+     }
+   }
+ }
+
+output {
+  stdout {
+        codec => rubydebug
+    }
+  elasticsearch {
+    hosts => ["127.0.0.1:9200"]
+          index => "test"
+  }
+}
+
+데이터 입력
+ INFO - 12345 - SQL - sqlQuery1 - 12
+ INFO - 12345 - SQL - sqlQuery2 - 34
+ INFO - 12345 - TASK_END - end
+
+
+3)END Event가 없는경우
+input { stdin { } }
+
+filter {
+  grok {
+     match => [ "message", "%{LOGLEVEL:loglevel} - %{NOTSPACE:taskid} - %{NOTSPACE:logger} - %{WORD:label}( - %{INT:duration:int})?" ]
+  }
+
+  aggregate {
+    task_id => "%{taskid}"
+    code => "map['sql_duration'] ||= 0 ; map['sql_duration'] += event.get('duration')"
+    push_map_as_event_on_timeout => true
+    timeout_task_id_field => "taskid"
+    timeout => 10 # 10 minutes timeout 초단위
+    timeout_tags => ['_aggregatetimeout']
+    timeout_code => "event.set('sql_duration', event.get('sql_duration')+10);event.set('lable','test');"
+  }
+}
+
+
+output {
+  stdout {
+        codec => rubydebug
+    }
+  elasticsearch {
+    hosts => ["127.0.0.1:9200"]
+          index => "test"
+  }
+}
+
+데이터 입력
+ INFO - 12345 - TASK_START - start
+ INFO - 12345 - SQL - sqlQuery1 - 12
+ INFO - 12345 - SQL - sqlQuery2 - 34
+ INFO - 12345 - TASK_END - end
+
+
+
+실습 4 : rest 사용하기
+
+시나리오 : 데이터에는 코드가 있고 코드의 이름은 코드 테이블에 있다
+
+
+코드 정보 입력
+
+POST code_index/code
+{
+    "key" : "001",
+    "value" : " 전자제품"
+}
+{
+    "key" : "002",
+    "value" : "육아제품"
+}
+{
+    "key" : "003",
+    "value" : "잡화"
+}
+{
+    "key" : "004",
+    "value" : "식료품"
+}
+
+
+rest 필터 설치
+bin/logstash-plugin install logstash-filter-rest
+
+
+
+vi test.conf
+
+input { stdin { } }
+filter
+{
+    grok  {
+            match => {"message" => ["%{GREEDYDATA:code}"]}
+
+    }
+    rest {
+        request => {
+            url => "http://localhost:9200/code_index/code/_search?q=key:%{code}" method => "get"
+        }
+        target => "queryResponse"
+    }
+  mutate {
+    add_field => [ "returnValue", "%{[queryResponse][hits][hits][0][_source][value]}" ]
+    remove_field => ["queryResponse"]
+  }
+
+}
+
+output {
+  stdout { codec => rubydebug }
+}

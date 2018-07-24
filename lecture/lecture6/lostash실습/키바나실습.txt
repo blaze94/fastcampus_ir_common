@@ -1,0 +1,41 @@
+1. 키바나 설치
+
+wget https://artifacts.elastic.co/downloads/kibana/kibana-6.3.1-linux-x86_64.tar.gz
+tar xvf kibana-6.3.1-linux-x86_64.tar.gz
+cd kibana-6.3.1-linux-x86_64
+
+vi config/kibana.yml
+server.host: "0.0.0.0"
+
+bin/kibana
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

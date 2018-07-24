@@ -1,0 +1,81 @@
+1. 카프카 설치
+wget http://mirror.navercorp.com/apache/kafka/1.1.0/kafka_2.11-1.1.0.tgz
+tar zxvf kafka_2.11-1.1.0.tgz
+cd kafka_2.11-1.1.0
+
+2. 주키퍼 및 카프카 실행
+bin/zookeeper-server-start.sh config/zookeeper.properties
+bin/kafka-server-start.sh config/server.properties
+
+3. 토픽 생성
+bin/kafka-topics.sh --create --zookeeper localhost:2181 --replication-factor 1 --partitions 1 --topic access_log
+
+생성된 토픽 확인
+bin/kafka-topics.sh --list --zookeeper localhost:2181
+
+
+간단한 메시지 전송
+bin/kafka-console-producer.sh --broker-list localhost:9092 --topic access_log
+
+간단한 메시지 수신
+bin/kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic access_log --from-beginning
+
+
+4. filebeat  output 설정 수정
+
+output.kafka:
+  # initial brokers for reading cluster metadata
+  hosts: ["localhost:9092"]
+
+  # message topic selection + partitioning
+  topic: 'access_log'
+  partition.round_robin:
+    reachable_only: false
+
+  required_acks: 1
+  compression: gzip
+  max_message_bytes: 1000000
+
+
+
+5. 로그스태쉬 input 설정 수정
+vi access_log_with_kafka.conf
+
+input {
+    kafka {
+        bootstrap_servers => "localhost:9092"
+        topics => ["access_log"]
+        codec => json
+    }
+}
+filter {
+        grok {
+            match => { "message" => "%{COMBINEDAPACHELOG}" }
+        }
+        geoip {
+                source => "clientip"
+        }
+}
+output {
+  elasticsearch{
+    hosts => ["127.0.0.1:9200"]
+    index => "access_log_with_kafka"
+    document_type => "log"
+  }
+  stdout {}
+}
+
+6. 디버깅 하기
+
+Logstash Output Kafka - Producer)
+$ bin/logstash -e "input { stdin {} } output { kafka { bootstrap_servers => '브로커주소:9024' topic_id => 'access_log' } }"
+
+
+
+
+
+Logstash Input Kafka - Consumer)
+$ bin/logstash -e "input { kafka { zk_connect => '주키퍼주소:2181' topic_id => 'access_log' } } output { stdout { codec => rubydebug } }"
+
+
+
