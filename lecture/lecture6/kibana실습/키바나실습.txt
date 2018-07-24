@@ -1,0 +1,123 @@
+1. 키바나 설치
+
+wget https://artifacts.elastic.co/downloads/kibana/kibana-6.3.1-linux-x86_64.tar.gz
+tar xvf kibana-6.3.1-linux-x86_64.tar.gz
+cd kibana-6.3.1-linux-x86_64
+
+vi config/kibana.yml
+server.host: "0.0.0.0"
+
+bin/kibana
+
+
+
+2. 데이터 다운로드
+wget https://github.com/blaze94/fastcampus_ir_common/raw/master/lecture/lecture6/kibana%EC%8B%A4%EC%8A%B5/2016_metro.tgz
+
+3. 매핑 작성
+-XPUT seoul-metro-2016
+{
+    "mappings" : {
+      "doc" : {
+        "properties" : {
+          "line_num" : {
+            "type" : "integer"
+          },
+          "line_num_en" : {
+            "type" : "keyword"
+          },
+          "people_in" : {
+            "type" : "integer"
+          },
+          "people_out" : {
+            "type" : "integer"
+          },
+          "station_geo" : {
+            "type" : "geo_point"
+          },
+          "station_name" : {
+            "type" : "keyword"
+          },
+          "station_name_ch" : {
+            "type" : "keyword"
+          },
+          "station_name_chc" : {
+            "type" : "keyword"
+          },
+          "station_name_en" : {
+            "type" : "keyword"
+          },
+          "station_name_jp" : {
+            "type" : "keyword"
+          },
+          "station_name_kr" : {
+            "type" : "keyword"
+          },
+          "time_slot" : {
+            "type" : "date"
+          }
+        }
+      }
+    }
+}
+
+
+4. metro.conf 생성
+input {
+  file {
+    codec => json
+    path => "/home/ec2-user/data/*.log"
+    start_position => "beginning"
+  }
+}
+
+filter{
+  mutate {
+    remove_field => [ "@version", "@timestamp", "host", "path" ]
+  }
+}
+
+output{
+  stdout {}
+  elasticsearch{
+    hosts => ["127.0.0.1:9200"]
+    index => "seoul-metro-2016"
+    document_type => "seoul-metro"
+  }
+}
+
+
+5.
+실습1:  승차객이 많은 역을 파이 그래프로 그리십시요.
+
+JSON Input
+
+{"script":"(_value)/2"}
+
+{"missing":100}
+
+
+실습2 :  일자별 승객 승하차 정보를  라인 차트로 그리십시요
+
+실습3 : 가장 많은 승차객이 있는 호선의 하위에 존재하는 역 이름을 2단 구조의 파이 수직 막대 그래프로 그리십시요
+
+실습4 : 가장 혼잡한 역사명을 태그 클라우드로 그리십시요.
+
+실습5 : 대쉬보드를 만드십시요.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
