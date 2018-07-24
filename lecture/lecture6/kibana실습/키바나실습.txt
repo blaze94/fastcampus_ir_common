@@ -109,6 +109,38 @@ JSON Input
 
 
 
+6. 스크립트 필드 예
+
+날짜 처리
+doc['@timestamp'].date.hourOfDay
+doc['@timestamp'].date.dayOfWeek
+
+
+문자결합
+doc['geoip.country_name.keyword'].value + ':' + doc['geoip.continent_code.keyword'].value
+
+논리연산
+if (doc['people_in'].value > 100) {
+    return "많음";
+}
+return "";
+
+하위 문자열 반환
+def path = doc['url.keyword'].value;
+if (path != null) {
+    int lastSlashIndex = path.lastIndexOf('/');
+    if (lastSlashIndex > 0) {
+    return path.substring(lastSlashIndex+1);
+    }
+}
+return "";
+
+정규식 일치
+if (doc['referer.keyword'].value =~ /error/) {
+return "error"
+} else {
+return "no error"
+}
 
 
 

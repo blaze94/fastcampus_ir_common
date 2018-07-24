@@ -1,23 +1,39 @@
+1.기본 문법
 
-1. 특정 기간동안 승차인원 총합
+.es(*)
+.es(q=*)
+
+
+인덱스 지정
+.es(q=*, index=access*)
+
+조건 지정
+.es(q=geoip.continent_code:AS, index=access*)
+라벨링
+.es(q=geoip.continent_code:AS, index=access*).label(아시아)
+여러 조건 연결
+.es(q=fields.log_type:access), .es(q=fields.log_type:error)
+
+
+1) 특정 기간동안 승차인원 총합
 
 .es(index=seoul-*, timefield='time_slot', metric='sum:people_in'),.es(index=seoul-*, timefield='time_slot', metric='sum:people_out')
 
 
 
-2. 역별 승차인원 총합 (라벨링)
+2) 역별 승차인원 총합 (라벨링)
 
 .es(timefield="time_slot",index="seoul-metro-2016",metric=sum:people_in,q=station_name:상왕십리).label("상왕십리역"),.es(timefield="time_slot",index="seoul-metro-2016",metric=sum:people_in,q=station_name:왕십리).label("왕십리")
 
-3. split 이용한 역별 승차인원
+3) split 이용한 역별 승차인원
 .es(timefield="time_slot",index="seoul-metro-2016",split=station_name:3, metric=sum:people_in)
 
-4.라인 스타일 지정,절대값
+4) 라인 스타일 지정,절대값
 .es(timefield="time_slot",index="seoul-metro-2016",split=station_name:3, metric=sum:people_in),.es().bars(), .static(20000).points(symbol=cross, radius=1), .static(30000).lines(width=1)
 
 .lines(steps=2,fill=2,width=10)
 
-5. 단위를 다르게
+5) 단위를 다르게
 .es(timefield="time_slot",index="seoul-metro-2016",metric=sum:people_in,q=station_name:상왕십리).label("상왕십리역"),.es(timefield="time_slot",index="seoul-metro-2016",metric=sum:people_in,q=station_name:왕십리).label("왕십리").yaxis(10)
 
 
