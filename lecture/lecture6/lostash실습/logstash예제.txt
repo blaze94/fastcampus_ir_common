@@ -38,8 +38,6 @@ filter {
 실습3 : logstash-aggregation-filter 사용
 
 bin/logstash-plugin install logstash-filter-aggregate
-설치(자바 7로 설치)
-
 
 로그스태쉬 설정
 

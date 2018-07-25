@@ -61,14 +61,6 @@ vi filebeat.yml
     - /var/log/nginx/access.log
   fields:
     log_type: access
-- type: log
-  enabled: true
-  paths:
-    - /var/log/nginx/error.log
-  fields:
-    log_type: error
-
-
 
 
 setup.template.name: "access_log"
@@ -102,7 +94,7 @@ PUT _ingest/pipeline/access_log
       }
     },
     {
-      "date": {
+      "date": {``
         "field": "timestamp",
         "formats": [
           "dd/MMM/YYYY:HH:mm:ss Z"
